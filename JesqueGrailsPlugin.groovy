@@ -1,18 +1,22 @@
-class GrailsJesqueGrailsPlugin {
+import net.greghaines.jesque.client.ClientImpl
+import net.greghaines.jesque.ConfigBuilder
+import net.greghaines.jesque.client.ClientPoolImpl
+import net.greghaines.jesque.Config
+
+class JesqueGrailsPlugin {
     // the plugin version
     def version = "0.1"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.6 > *"
     // the other plugins this plugin depends on
-    def dependsOn = [:]
+    def dependsOn = [redis:"1.0.0M7 > *"]
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
             "grails-app/views/error.gsp"
     ]
 
-    // TODO Fill in these fields
-    def author = "Your name"
-    def authorEmail = ""
+    def author = "Michael Cameron"
+    def authorEmail = "michael.e.cameron@gmail.com"
     def title = "Jesque"
     def description = '''\\
 Grails Jesque plug-in
@@ -26,7 +30,18 @@ Grails Jesque plug-in
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+        log.info "Creating jesque beans"
+        def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
+        def jesqueConfigBuilder = new ConfigBuilder()
+        if( jesqueConfigMap.namespace )
+            jesqueConfigBuilder.withNamespace(jesqueConfigMap.namespace)
+
+        def jesqueConfigInstance = jesqueConfigBuilder.build()
+
+        jesqueConfig(Config, jesqueConfigInstance.host, jesqueConfigInstance.port, jesqueConfigInstance.timeout,
+                        jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database,
+                        jesqueConfigInstance.jobPackage)
+        jesqueClient(ClientPoolImpl, jesqueConfigInstance, ref('redisPool'))
     }
 
     def doWithDynamicMethods = { ctx ->
