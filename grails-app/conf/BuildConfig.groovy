@@ -30,6 +30,12 @@ grails.project.dependency.resolution = {
                 'org.slf4j:slf4j-api:1.6.1') {
             transitive = false
         }
+
+        plugins {
+            test(':build-test-data:1.1.1') {
+                
+            }
+        }
     }
 }
 

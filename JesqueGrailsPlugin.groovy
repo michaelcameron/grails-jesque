@@ -1,7 +1,10 @@
-import net.greghaines.jesque.client.ClientImpl
 import net.greghaines.jesque.ConfigBuilder
 import net.greghaines.jesque.client.ClientPoolImpl
 import net.greghaines.jesque.Config
+import net.greghaines.jesque.meta.dao.impl.FailureDAORedisImpl
+import net.greghaines.jesque.meta.dao.impl.KeysDAORedisImpl
+import net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl
+import net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl
 
 class JesqueGrailsPlugin {
     // the plugin version
@@ -9,7 +12,7 @@ class JesqueGrailsPlugin {
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.6 > *"
     // the other plugins this plugin depends on
-    def dependsOn = [redis:"1.0.0M7 > *"]
+    def dependsOn = [redis:"1.0.0M7 > *", hibernate:"1.3.6 > *"]
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
             "grails-app/views/error.gsp"
@@ -42,6 +45,11 @@ Grails Jesque plug-in
                         jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database,
                         jesqueConfigInstance.jobPackage)
         jesqueClient(ClientPoolImpl, jesqueConfigInstance, ref('redisPool'))
+
+        failureDao(FailureDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+        keysDao(KeysDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+        queueInfoDao(QueueInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+        workerInfoDao(WorkerInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
     }
 
     def doWithDynamicMethods = { ctx ->
