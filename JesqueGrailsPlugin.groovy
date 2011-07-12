@@ -5,6 +5,9 @@ import net.greghaines.jesque.meta.dao.impl.FailureDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.KeysDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl
+import org.grails.jesque.JobArtefactHandler
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.grails.jesque.GrailsJobClass
 
 class JesqueGrailsPlugin {
     // the plugin version
@@ -25,11 +28,17 @@ class JesqueGrailsPlugin {
 Grails Jesque plug-in
 '''
 
+    def watchedResources = [
+            "file:./grails-app/jobs/**/*Job.groovy",
+            "file:./plugins/*/grails-app/jobs/**/*Job.groovy"
+    ]
+
+    def artefacts = [new JobArtefactHandler()]
+
     // URL to the plugin's documentation
     def documentation = "https://bitbucket.org/mcameron/grails-jesque"
 
     def doWithWebDescriptor = { xml ->
-        // TODO Implement additions to web.xml (optional), this event occurs before 
     }
 
     def doWithSpring = {
@@ -50,24 +59,40 @@ Grails Jesque plug-in
         keysDao(KeysDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
         queueInfoDao(QueueInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
         workerInfoDao(WorkerInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+
+        log.info "Creating job beans"
+        log.info "Job Classes found: ${application.jobClasses.size()}"
+        application.jobClasses.each {jobClass ->
+            configureJobBeans.delegate = delegate
+            configureJobBeans(jobClass)
+        }
+    }
+
+    def configureJobBeans = {GrailsJobClass jobClass ->
+        def fullName = jobClass.fullName
+
+        "${fullName}Class"(MethodInvokingFactoryBean) {
+            targetObject = ref("grailsApplication", true)
+            targetMethod = "getArtefact"
+            arguments = [JobArtefactHandler.TYPE, jobClass.fullName]
+        }
+
+        "${fullName}"(ref("${fullName}Class")) {bean ->
+            bean.factoryMethod = "newInstance"
+            bean.autowire = "byName"
+            bean.scope = "prototype"
+        }
     }
 
     def doWithDynamicMethods = { ctx ->
-        // TODO Implement registering dynamic methods to classes (optional)
     }
 
     def doWithApplicationContext = { applicationContext ->
-        // TODO Implement post initialization spring config (optional)
     }
 
     def onChange = { event ->
-        // TODO Implement code that is executed when any artefact that this plugin is
-        // watching is modified and reloaded. The event contains: event.source,
-        // event.application, event.manager, event.ctx, and event.plugin.
     }
 
     def onConfigChange = { event ->
-        // TODO Implement code that is executed when the project configuration changes.
-        // The event is the same as for 'onChange'.
     }
 }

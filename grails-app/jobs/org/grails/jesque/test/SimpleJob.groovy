@@ -1,8 +1,8 @@
 package org.grails.jesque.test
 
-class SimpleAction implements Runnable {
+class SimpleJob {
 
-    void run() {
+    void perform() {
         println "you ran a simple action"
     }
 }

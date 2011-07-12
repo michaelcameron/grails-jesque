@@ -1,10 +1,11 @@
 package org.grails.jesque
 
-import org.grails.jesque.test.SimpleAction
+import org.grails.jesque.test.SimpleJob
 import net.greghaines.jesque.meta.dao.QueueInfoDAO
 import net.greghaines.jesque.meta.dao.FailureDAO
 import org.grails.jesque.test.Foo
-import org.grails.jesque.test.DomainAction
+import org.grails.jesque.test.DomainJob
+import org.grails.jesque.test.AutoWireJob
 
 class JesqueServiceIntegrationTests {
 
@@ -12,14 +13,14 @@ class JesqueServiceIntegrationTests {
     QueueInfoDAO queueInfoDao
     FailureDAO failureDao
 
-    void testWorkerSimpleAction() {
+    void testWorkerSimpleJob() {
         def queueName = 'testQueue'
 
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
 
-        jesqueService.enqueue(queueName, SimpleAction )
-        jesqueService.withWorker(queueName, SimpleAction) {
+        jesqueService.enqueue(queueName, SimpleJob )
+        jesqueService.withWorker(queueName, SimpleJob) {
             sleep(5000)
         }
 
@@ -27,7 +28,7 @@ class JesqueServiceIntegrationTests {
         assert existingFailureCount == failureDao.count
     }
 
-    void testWorkerDomainAccess() {
+    void testWorkerDomainJob() {
         def queueName = 'testQueue'
 
         def fooName = 'name'
@@ -36,8 +37,8 @@ class JesqueServiceIntegrationTests {
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
 
-        jesqueService.enqueue(queueName, DomainAction, foo.id )
-        jesqueService.withWorker(queueName, DomainAction) {
+        jesqueService.enqueue(queueName, DomainJob, foo.id )
+        jesqueService.withWorker(queueName, DomainJob) {
             sleep(5000)
         }
 
@@ -46,5 +47,20 @@ class JesqueServiceIntegrationTests {
         assert existingProcessedCount + 1 == queueInfoDao.processedCount
         assert existingFailureCount == failureDao.count
         assert fooName + fooName == foo.name
+    }
+
+    void testAutoWireJob() {
+        def queueName = 'testQueue'
+
+        def existingProcessedCount = queueInfoDao.processedCount
+        def existingFailureCount = failureDao.count
+
+        jesqueService.enqueue(queueName, AutoWireJob )
+        jesqueService.withWorker(queueName, AutoWireJob ) {
+            sleep(5000)
+        }
+
+        assert existingProcessedCount + 1 == queueInfoDao.processedCount
+        assert existingFailureCount == failureDao.count
     }
 }

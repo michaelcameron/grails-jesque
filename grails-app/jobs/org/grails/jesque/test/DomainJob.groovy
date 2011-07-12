@@ -1,13 +1,8 @@
 package org.grails.jesque.test
 
-class DomainAction implements Runnable {
-    def id
+class DomainJob {
 
-    DomainAction(id) {
-        this.id = id
-    }
-
-    void run() {
+    void perform(id) {
         def foo = Foo.get(id)
         foo.name = foo.name + foo.name
         foo.save()

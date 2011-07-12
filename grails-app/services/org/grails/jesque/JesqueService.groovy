@@ -10,6 +10,7 @@ class JesqueService {
 
     static transactional = false
 
+    def grailsApplication
     def sessionFactory
     def jesqueConfig
     Client jesqueClient
@@ -44,7 +45,7 @@ class JesqueService {
     //todo: test that hibernate/gorm works correctly on worker threads
     Worker startWorker(List<String> queues, List<Class> jobTypes) {
 
-        def worker = new WorkerImpl(jesqueConfig, queues, jobTypes )
+        def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes )
         def listener = new WorkerHibernateListener(sessionFactory)
         worker.addListener(listener, WorkerEvent.JOB_EXECUTE, WorkerEvent.JOB_SUCCESS, WorkerEvent.JOB_FAILURE )
         def workerThread = new Thread(worker)
