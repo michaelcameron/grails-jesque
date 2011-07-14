@@ -8,6 +8,7 @@ import net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl
 import org.grails.jesque.JobArtefactHandler
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.grails.jesque.GrailsJobClass
+import org.grails.jesque.JesqueService
 
 class JesqueGrailsPlugin {
     // the plugin version
@@ -42,7 +43,7 @@ Grails Jesque plug-in
     }
 
     def doWithSpring = {
-        log.info "Creating jesque beans"
+        log.info "Creating jesque core beans"
         def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
         def jesqueConfigBuilder = new ConfigBuilder()
         if( jesqueConfigMap.namespace )
@@ -60,12 +61,13 @@ Grails Jesque plug-in
         queueInfoDao(QueueInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
         workerInfoDao(WorkerInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
 
-        log.info "Creating job beans"
-        log.info "Job Classes found: ${application.jobClasses.size()}"
+        log.info "Creating jesque job beans"
         application.jobClasses.each {jobClass ->
             configureJobBeans.delegate = delegate
             configureJobBeans(jobClass)
         }
+
+
     }
 
     def configureJobBeans = {GrailsJobClass jobClass ->
@@ -88,6 +90,10 @@ Grails Jesque plug-in
     }
 
     def doWithApplicationContext = { applicationContext ->
+        log.info "Starting jesque workers"
+        def jesqueService = applicationContext.jesqueService
+        jesqueService.pruneWorkers()
+        jesqueService.startWorkersFromConfig()
     }
 
     def onChange = { event ->

@@ -1,5 +1,18 @@
+import org.grails.jesque.test.SimpleJob
+
 // configuration for plugin testing - will not be included in the plugin zip
- 
+grails {
+    jesque {
+        pruneWorkersOnStartup = true
+        workers {
+            MyWork {
+                queue = 'queueName'
+                jobTypes = SimpleJob
+            }
+        }
+    }
+}
+
 log4j = {
     // Example of changing the log pattern for the default console
     // appender:

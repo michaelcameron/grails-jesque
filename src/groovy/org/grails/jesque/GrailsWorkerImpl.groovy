@@ -1,24 +1,17 @@
 package org.grails.jesque
 
-import net.greghaines.jesque.worker.WorkerImpl
-import net.greghaines.jesque.Config
 import grails.spring.BeanBuilder
 import org.codehaus.groovy.grails.commons.GrailsApplication
+
+import static net.greghaines.jesque.utils.ResqueConstants.WORKER
+import static net.greghaines.jesque.worker.WorkerEvent.JOB_PROCESS
+import static net.greghaines.jesque.worker.WorkerEvent.JOB_EXECUTE
+import net.greghaines.jesque.Config
 import net.greghaines.jesque.Job
-
-import static net.greghaines.jesque.utils.ResqueConstants.WORKER;
-
-import static net.greghaines.jesque.worker.WorkerEvent.JOB_EXECUTE;
-import static net.greghaines.jesque.worker.WorkerEvent.JOB_FAILURE;
-import static net.greghaines.jesque.worker.WorkerEvent.JOB_PROCESS;
-import static net.greghaines.jesque.worker.WorkerEvent.JOB_SUCCESS;
-import static net.greghaines.jesque.worker.WorkerEvent.WORKER_ERROR;
-import static net.greghaines.jesque.worker.WorkerEvent.WORKER_POLL;
-import static net.greghaines.jesque.worker.WorkerEvent.WORKER_START;
-import static net.greghaines.jesque.worker.WorkerEvent.WORKER_STOP
-import net.greghaines.jesque.worker.UnpermittedJobException
 import net.greghaines.jesque.utils.ReflectionUtils
-import java.util.concurrent.Callable;
+import net.greghaines.jesque.worker.UnpermittedJobException
+import net.greghaines.jesque.worker.WorkerImpl
+
 
 class GrailsWorkerImpl extends WorkerImpl {
 

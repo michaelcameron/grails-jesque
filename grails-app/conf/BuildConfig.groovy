@@ -22,7 +22,7 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.jboss.com/maven2/"
     }
     dependencies {
-        compile('net.greghaines:jesque:0.9.8-MCAMERON4',
+        compile('net.greghaines:jesque:0.9.8-SNAPSHOT',
                 'redis.clients:jedis:2.0.0',
                 'commons-pool:commons-pool:1.5.6',
                 'org.codehaus.jackson:jackson-mapper-asl:1.8.2',

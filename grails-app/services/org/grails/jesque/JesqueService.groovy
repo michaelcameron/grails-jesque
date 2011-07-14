@@ -5,6 +5,8 @@ import net.greghaines.jesque.Job
 import net.greghaines.jesque.worker.WorkerImpl
 import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.worker.WorkerEvent
+import net.greghaines.jesque.meta.dao.WorkerInfoDAO
+import net.greghaines.jesque.meta.WorkerInfo
 
 class JesqueService {
 
@@ -14,6 +16,7 @@ class JesqueService {
     def sessionFactory
     def jesqueConfig
     Client jesqueClient
+    WorkerInfoDAO workerInfoDao
 
     void enqueue(String queueName, Job job) {
         jesqueClient.enqueue(queueName, job)
@@ -60,6 +63,23 @@ class JesqueService {
             closure()
         } finally {
             worker.end(true)
+        }
+    }
+
+    void startWorkersFromConfig() {
+        def jesqueConfigMap = grailsApplication.config?.grails?.jesque ?: [:]
+        jesqueConfigMap?.workers?.each{ key, value ->
+            startWorker(value.queue, value.jobTypes)
+        }
+    }
+
+    void pruneWorkers() {
+        def hostName = InetAddress.localHost.hostName
+        workerInfoDao.allWorkers?.each { WorkerInfo workerInfo ->
+            if( workerInfo.host == hostName ) {
+                log.debug "Removing stale worker $workerInfo.name"
+                workerInfoDao.removeWorker(workerInfo.name)
+            }
         }
     }
 }
