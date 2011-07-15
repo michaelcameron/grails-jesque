@@ -35,7 +35,7 @@ Grails Jesque plug-in
 
     def artefacts = [new JobArtefactHandler()]
 
-    def documentation = "https://bitbucket.org/mcameron/grails-jesque"
+    def documentation = "https://github.com/michaelcameron/grails-jesque"
 
     def doWithWebDescriptor = { xml ->
     }
