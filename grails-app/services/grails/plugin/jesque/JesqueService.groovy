@@ -38,14 +38,18 @@ class JesqueService {
         jesqueClient.enqueue(queueName, new Job(jobClassName, args))
     }
 
-
     Worker startWorker(String queueName, Class jobType) {
         startWorker([queueName], [jobType])
     }
 
-    //todo: do not require worker actions to implement runnable
-    //todo: do spring autowiring of actions before execution
-    //todo: test that hibernate/gorm works correctly on worker threads
+    Worker startWorker(List queueName, Class jobType) {
+        startWorker(queueName, [jobType])
+    }
+
+    Worker startWorker(String queueName, List jobType) {
+        startWorker([queueName], jobType)
+    }
+
     Worker startWorker(List<String> queues, List<Class> jobTypes) {
 
         def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes )
@@ -69,7 +73,11 @@ class JesqueService {
     void startWorkersFromConfig() {
         def jesqueConfigMap = grailsApplication.config?.grails?.jesque ?: [:]
         jesqueConfigMap?.workers?.each{ key, value ->
-            startWorker(value.queue, value.jobTypes)
+            def workers = value.workers?.isInteger() ? value.workers.toInteger() : 1
+
+            workers.times {
+                startWorker(value.queueNames, value.jobTypes)
+            }
         }
     }
 

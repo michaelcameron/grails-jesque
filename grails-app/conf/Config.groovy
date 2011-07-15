@@ -6,7 +6,7 @@ grails {
         pruneWorkersOnStartup = true
         workers {
             MyWork {
-                queue = 'queueName'
+                queueNames = 'queueName'
                 jobTypes = SimpleJob
             }
         }
