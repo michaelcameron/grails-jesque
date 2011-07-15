@@ -5,9 +5,9 @@ import net.greghaines.jesque.meta.dao.impl.FailureDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.KeysDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl
-import org.grails.jesque.JobArtefactHandler
+import grails.plugin.jesque.JobArtefactHandler
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.grails.jesque.GrailsJobClass
+import grails.plugin.jesque.GrailsJobClass
 
 class JesqueGrailsPlugin {
     // the plugin version
