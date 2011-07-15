@@ -33,7 +33,7 @@ grails.project.dependency.resolution = {
 
         plugins {
             test(':build-test-data:1.1.1') {
-                
+                export = false
             }
         }
     }

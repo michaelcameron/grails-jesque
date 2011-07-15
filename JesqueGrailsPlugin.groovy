@@ -8,13 +8,12 @@ import net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl
 import org.grails.jesque.JobArtefactHandler
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.grails.jesque.GrailsJobClass
-import org.grails.jesque.JesqueService
 
 class JesqueGrailsPlugin {
     // the plugin version
     def version = "0.1"
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "1.3.6 > *"
+    def grailsVersion = "1.3.0 > *"
     // the other plugins this plugin depends on
     def dependsOn = [redis:"1.0.0M7 > *", hibernate:"1.3.6 > *"]
     // resources that are excluded from plugin packaging
@@ -36,7 +35,6 @@ Grails Jesque plug-in
 
     def artefacts = [new JobArtefactHandler()]
 
-    // URL to the plugin's documentation
     def documentation = "https://bitbucket.org/mcameron/grails-jesque"
 
     def doWithWebDescriptor = { xml ->
@@ -92,13 +90,18 @@ Grails Jesque plug-in
     def doWithApplicationContext = { applicationContext ->
         log.info "Starting jesque workers"
         def jesqueService = applicationContext.jesqueService
-        jesqueService.pruneWorkers()
+        def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
+        //todo:merge in a default config
+        if( !jesqueConfigMap?.containsKey('pruneWorkersOnStartup') || jesqueConfigMap?.prunerWorkersOnStartup )
+            jesqueService.pruneWorkers()
         jesqueService.startWorkersFromConfig()
     }
 
     def onChange = { event ->
+        //todo: manage changes
     }
 
     def onConfigChange = { event ->
+        //todo: manage changes
     }
 }
