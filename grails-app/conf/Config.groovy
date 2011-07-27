@@ -1,4 +1,4 @@
-import grails.plugin.jesque.SimpleJob
+import grails.plugin.jesque.test.SimpleJob
 
 // configuration for plugin testing - will not be included in the plugin zip
 grails {

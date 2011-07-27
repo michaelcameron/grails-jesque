@@ -1,4 +1,4 @@
-package grails.plugin.jesque
+package grails.plugin.jesque.test
 
 class AutoWireJob {
 

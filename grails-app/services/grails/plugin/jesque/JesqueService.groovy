@@ -7,6 +7,8 @@ import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.worker.WorkerEvent
 import net.greghaines.jesque.meta.dao.WorkerInfoDAO
 import net.greghaines.jesque.meta.WorkerInfo
+import java.lang.reflect.Method
+import grails.plugin.jesque.annotation.Async
 
 class JesqueService {
 
@@ -87,6 +89,32 @@ class JesqueService {
             if( workerInfo.host == hostName ) {
                 log.debug "Removing stale worker $workerInfo.name"
                 workerInfoDao.removeWorker(workerInfo.name)
+            }
+        }
+    }
+
+    void createAsyncMethods() {
+        grailsApplication.jobClasses.each{ Class jobClass ->
+            jobClass.methods.each{ Method method ->
+                if( !(Async in method.annotations ) )
+                    return
+
+                if( method.returnType != Void )
+                    throw new Exception("The return type of an async method must be void")
+
+                /*
+                def parameterTypes = method.parameterTypes
+                def argNumber = 0
+                def parameterString = parameterTypes.collect{ type -> "$type.name ${argNumber++}" }.join(',')
+                argNumber = 0
+                def argumentString = parameterTypes.colelct{ type -> "${argNumber++}" }.join(',')
+                def closureString = "{"
+                jobClass.metaClass."${method.name}Async" = Eval.me """
+                { $parameterString ->
+
+                }
+                """
+                */
             }
         }
     }

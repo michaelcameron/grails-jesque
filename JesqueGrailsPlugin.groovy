@@ -10,23 +10,27 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import grails.plugin.jesque.GrailsJobClass
 
 class JesqueGrailsPlugin {
-    // the plugin version
     def version = "0.1"
-    // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
-    // the other plugins this plugin depends on
     def dependsOn = [redis:"1.0.0M7 > *", hibernate:"1.3.6 > *"]
-    // resources that are excluded from plugin packaging
     def pluginExcludes = [
             "grails-app/views/error.gsp"
     ]
 
+    def title = "Jesque - Redis backed job processing"
+    def description = '''\\
+Grails Jesque plug-in. Redis backed job processing
+'''
+
     def author = "Michael Cameron"
     def authorEmail = "michael.e.cameron@gmail.com"
-    def title = "Jesque"
-    def description = '''\\
-Grails Jesque plug-in
-'''
+
+    def license = "APACHE"
+    def developers = [
+        [ name: "Michael Cameron", email: "michael.e.cameron@gmail.com" ],
+        [ name: "Ted Naleid", email: "contact@naleid.com" ] ]
+    def documentation = "https://github.com/michaelcameron/grails-jesque"
+    def scm = [ url: "https://github.com/michaelcameron/grails-jesque" ]
 
     def watchedResources = [
             "file:./grails-app/jobs/**/*Job.groovy",
@@ -35,7 +39,6 @@ Grails Jesque plug-in
 
     def artefacts = [new JobArtefactHandler()]
 
-    def documentation = "https://github.com/michaelcameron/grails-jesque"
 
     def doWithWebDescriptor = { xml ->
     }
@@ -64,8 +67,6 @@ Grails Jesque plug-in
             configureJobBeans.delegate = delegate
             configureJobBeans(jobClass)
         }
-
-
     }
 
     def configureJobBeans = {GrailsJobClass jobClass ->
@@ -84,7 +85,10 @@ Grails Jesque plug-in
         }
     }
 
-    def doWithDynamicMethods = { ctx ->
+    def doWithDynamicMethods = { applicationContext ->
+        log.info "Create jesque async methods"
+        def jesqueService = applicationContext.jesqueService
+        jesqueService.createAsyncMethods()
     }
 
     def doWithApplicationContext = { applicationContext ->
