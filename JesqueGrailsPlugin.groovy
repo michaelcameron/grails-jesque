@@ -10,7 +10,7 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import grails.plugin.jesque.GrailsJobClass
 
 class JesqueGrailsPlugin {
-    def version = "0.1"
+    def version = "0.11-SNAPSHOT"
     def grailsVersion = "1.3.0 > *"
     def dependsOn = [redis:"1.0.0M7 > *", hibernate:"1.3.6 > *"]
     def pluginExcludes = [
@@ -45,10 +45,20 @@ Grails Jesque plug-in. Redis backed job processing
 
     def doWithSpring = {
         log.info "Creating jesque core beans"
+        def redisConfigMap = application.config?.grails?.redis ?: [:]
         def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
+
         def jesqueConfigBuilder = new ConfigBuilder()
         if( jesqueConfigMap.namespace )
-            jesqueConfigBuilder.withNamespace(jesqueConfigMap.namespace)
+            jesqueConfigBuilder = jesqueConfigBuilder.withNamespace(jesqueConfigMap.namespace)
+        if( redisConfigMap.host )
+            jesqueConfigBuilder = jesqueConfigBuilder.withHost(redisConfigMap.host)
+        if( redisConfigMap.port )
+            jesqueConfigBuilder = jesqueConfigBuilder.withPort(redisConfigMap.port)
+        if( redisConfigMap.timeout )
+            jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout)
+        if( redisConfigMap.password )
+            jesqueConfigBuilder = jesqueConfigBuilder.withPassword(redisConfigMap.password)
 
         def jesqueConfigInstance = jesqueConfigBuilder.build()
 
@@ -86,9 +96,9 @@ Grails Jesque plug-in. Redis backed job processing
     }
 
     def doWithDynamicMethods = { applicationContext ->
-        log.info "Create jesque async methods"
-        def jesqueService = applicationContext.jesqueService
-        jesqueService.createAsyncMethods()
+        //log.info "Create jesque async methods"
+        //def jesqueService = applicationContext.jesqueService
+        //jesqueService.createAsyncMethods()
     }
 
     def doWithApplicationContext = { applicationContext ->

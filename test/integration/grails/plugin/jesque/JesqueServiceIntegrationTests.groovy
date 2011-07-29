@@ -82,4 +82,19 @@ class JesqueServiceIntegrationTests {
         assert existingFailureCount + 1 == failureDao.count
     }
 
+    void testNonExistentJob() {
+        def queueName = 'testQueue'
+
+        def existingProcessedCount = queueInfoDao.processedCount
+        def existingFailureCount = failureDao.count
+
+        jesqueService.enqueue(queueName, 'DoesNotExistJob' )
+        jesqueService.withWorker(queueName, SimpleJob ) {
+            sleep(2000)
+        }
+
+        assert existingProcessedCount == queueInfoDao.processedCount
+        assert existingFailureCount + 1 == failureDao.count
+    }
+
 }
