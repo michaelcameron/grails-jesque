@@ -10,7 +10,7 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import grails.plugin.jesque.GrailsJobClass
 
 class JesqueGrailsPlugin {
-    def version = "0.11.M1"
+    def version = "0.11.M2"
     def grailsVersion = "1.3.0 > *"
     def dependsOn = [redis:"1.0.0M7 > *", hibernate:"1.3.6 > *"]
     def pluginExcludes = [
@@ -105,8 +105,9 @@ Grails Jesque plug-in. Redis backed job processing
         log.info "Starting jesque workers"
         def jesqueService = applicationContext.jesqueService
         def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
+        log.info "Found ${jesqueConfigMap.size()} workers"
         //todo:merge in a default config
-        if( jesqueConfigMap?.prunerWorkersOnStartup )
+        if( jesqueConfigMap?.pruneWorkersOnStartup )
             jesqueService.pruneWorkers()
         jesqueService.startWorkersFromConfig()
     }

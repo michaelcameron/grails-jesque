@@ -37,11 +37,16 @@ grails.project.dependency.resolution = {
         compile('net.greghaines:jesque:0.9.8',
                 'redis.clients:jedis:2.0.0',
                 'commons-pool:commons-pool:1.5.6',
-                'org.codehaus.jackson:jackson-mapper-asl:1.8.2',
-                'org.codehaus.jackson:jackson-core-asl:1.8.2',
-                'org.slf4j:slf4j-api:1.6.1') {
+                'org.codehaus.jackson:jackson-mapper-asl:1.8.3',
+                'org.codehaus.jackson:jackson-core-asl:1.8.3') {
             transitive = false
         }
+
+        test("org.seleniumhq.selenium:selenium-htmlunit-driver:2.3.1") {
+            excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
+        }
+
+        compile "org.codehaus.geb:geb-spock:0.6.0"
 
         plugins {
             compile(':redis:1.0.0.M7')

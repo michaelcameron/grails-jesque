@@ -75,6 +75,8 @@ class JesqueService {
     void startWorkersFromConfig() {
         def jesqueConfigMap = grailsApplication.config?.grails?.jesque ?: [:]
         jesqueConfigMap?.workers?.each{ key, value ->
+            log.info "Starting workers for pool $key"
+
             def workers = value.workers ? value.workers.toInteger() : 1
 
             def queueNames = value.queueNames
