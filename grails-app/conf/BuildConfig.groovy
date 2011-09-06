@@ -44,7 +44,7 @@ grails.project.dependency.resolution = {
         }
 
         plugins {
-            compile(':redis:1.0.0.M7')
+            compile(':redis:latest.integration')
         }
     }
 }
