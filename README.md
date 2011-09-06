@@ -39,7 +39,7 @@ class SomeOtherClass {
     def jesqueService
 
     def doWorkAsync() {
-        jesqueService.enqueue( 'myQueueName', BackgroundJob, 1, 'hi there')
+        jesqueService.enqueue( 'myQueueName', BackgroundJob.simpleName, 1, 'hi there')
     }
 }
 ```
@@ -47,7 +47,7 @@ class SomeOtherClass {
 Workers can be started manually by calling
 
 ```groovy
-    jesqueService.startWorker( 'myQueueName', BackgroundJob )
+    jesqueService.startWorker( 'myQueueName', BackgroundJob.simpleName, BackgroundJob )
 ```
 
 or automatically upon start-up with the following config
@@ -59,7 +59,7 @@ grails {
             someNameForYourWorkerPool {
                 workers = 3 //defaults to 1
                 queueNames = 'myQueueName' //or a list
-                jobTypes = BackgroundJob //or a list
+                jobTypes = [(BackgroundJob.simpleName):BackgroundJob]
             }
         }
     }

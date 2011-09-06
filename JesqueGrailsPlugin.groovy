@@ -63,8 +63,7 @@ Grails Jesque plug-in. Redis backed job processing
         def jesqueConfigInstance = jesqueConfigBuilder.build()
 
         jesqueConfig(Config, jesqueConfigInstance.host, jesqueConfigInstance.port, jesqueConfigInstance.timeout,
-                        jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database,
-                        jesqueConfigInstance.jobPackage)
+                        jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database)
         jesqueClient(ClientPoolImpl, jesqueConfigInstance, ref('redisPool'))
 
         failureDao(FailureDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))

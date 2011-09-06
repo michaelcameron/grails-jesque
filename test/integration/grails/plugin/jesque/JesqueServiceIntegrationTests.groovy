@@ -21,8 +21,8 @@ class JesqueServiceIntegrationTests {
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
 
-        jesqueService.enqueue(queueName, SimpleJob )
-        jesqueService.withWorker(queueName, SimpleJob) {
+        jesqueService.enqueue(queueName, SimpleJob.simpleName )
+        jesqueService.withWorker(queueName, SimpleJob.simpleName, SimpleJob) {
             sleep(2000)
         }
 
@@ -40,8 +40,8 @@ class JesqueServiceIntegrationTests {
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
 
-        jesqueService.enqueue(queueName, DomainJob, foo.id )
-        jesqueService.withWorker(queueName, DomainJob) {
+        jesqueService.enqueue(queueName, DomainJob.simpleName, foo.id )
+        jesqueService.withWorker(queueName, DomainJob.simpleName, DomainJob) {
             sleep(2000)
         }
 
@@ -58,8 +58,8 @@ class JesqueServiceIntegrationTests {
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
 
-        jesqueService.enqueue(queueName, AutoWireJob )
-        jesqueService.withWorker(queueName, AutoWireJob ) {
+        jesqueService.enqueue(queueName, AutoWireJob.simpleName )
+        jesqueService.withWorker(queueName, AutoWireJob.simpleName, AutoWireJob ) {
             sleep(2000)
         }
 
@@ -73,8 +73,8 @@ class JesqueServiceIntegrationTests {
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
 
-        jesqueService.enqueue(queueName, ExceptionJob )
-        jesqueService.withWorker(queueName, ExceptionJob ) {
+        jesqueService.enqueue(queueName, ExceptionJob.simpleName )
+        jesqueService.withWorker(queueName, ExceptionJob.simpleName, ExceptionJob ) {
             sleep(2000)
         }
 
@@ -89,7 +89,7 @@ class JesqueServiceIntegrationTests {
         def existingFailureCount = failureDao.count
 
         jesqueService.enqueue(queueName, 'DoesNotExistJob' )
-        jesqueService.withWorker(queueName, SimpleJob ) {
+        jesqueService.withWorker(queueName, SimpleJob.simpleName, SimpleJob ) {
             sleep(2000)
         }
 

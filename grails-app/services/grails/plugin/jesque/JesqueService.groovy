@@ -24,37 +24,29 @@ class JesqueService {
         jesqueClient.enqueue(queueName, job)
     }
 
-    void enqueue(String queueName, Class jobClass, List args) {
-        enqueue(queueName, jobClass?.name, args)
+    void enqueue(String queueName, String jobName, List args) {
+        jesqueClient.enqueue(queueName, new Job(jobName, args))
     }
 
-    void enqueue(String queueName, String jobClassName, List args) {
-        jesqueClient.enqueue(queueName, new Job(jobClassName, args))
+    void enqueue(String queueName, String jobName, Object... args) {
+        jesqueClient.enqueue(queueName, new Job(jobName, args))
     }
 
-    void enqueue(String queueName, Class jobClass, Object... args) {
-        enqueue(queueName, jobClass?.name, args)
+    Worker startWorker(String queueName, String jobName, Class jobClass) {
+        startWorker([queueName], [(jobName):jobClass])
     }
 
-    void enqueue(String queueName, String jobClassName, Object... args) {
-        jesqueClient.enqueue(queueName, new Job(jobClassName, args))
+    Worker startWorker(List queueName, String jobName, Class jobClass) {
+        startWorker(queueName, [(jobName):jobClass])
     }
 
-    Worker startWorker(String queueName, Class jobType) {
-        startWorker([queueName], [jobType])
+    Worker startWorker(String queueName, Map<String, Class> jobTypes) {
+        startWorker([queueName], jobTypes)
     }
 
-    Worker startWorker(List queueName, Class jobType) {
-        startWorker(queueName, [jobType])
-    }
+    Worker startWorker(List<String> queues, Map<String, Class> jobTypes) {
 
-    Worker startWorker(String queueName, List jobType) {
-        startWorker([queueName], jobType)
-    }
-
-    Worker startWorker(List<String> queues, List<Class> jobTypes) {
-
-        def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes )
+        def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes)
         def listener = new WorkerHibernateListener(sessionFactory)
         worker.addListener(listener, WorkerEvent.JOB_EXECUTE, WorkerEvent.JOB_SUCCESS, WorkerEvent.JOB_FAILURE )
         def workerThread = new Thread(worker)
@@ -63,8 +55,8 @@ class JesqueService {
         worker
     }
 
-    void withWorker(String queueName, Class jobType, Closure closure) {
-        def worker = startWorker(queueName, jobType)
+    void withWorker(String queueName, String jobName, Class jobClassName, Closure closure) {
+        def worker = startWorker(queueName, jobName, jobClassName)
         try {
             closure()
         } finally {
@@ -84,7 +76,9 @@ class JesqueService {
                 throw new Exception("Invalid queueNames ($queueNames) for pool $key")
 
             def jobTypes = value.jobTypes
-            if( !((jobTypes instanceof String) || (jobTypes instanceof Class) || (jobTypes instanceof List)) )
+            println "######## " + value.jobTypes
+            println "######## " + value.jobTypes.getClass().name
+            if( !(jobTypes instanceof Map) )
                 throw new Exception("Invalid jobTypes ($jobTypes) for pool $key")
 
             workers.times {

@@ -34,7 +34,7 @@ grails.project.dependency.resolution = {
         resolver warmhealthResolver
     }
     dependencies {
-        compile('net.greghaines:jesque:0.9.8',
+        compile('net.greghaines:jesque:1.0.0',
                 'redis.clients:jedis:2.0.0',
                 'commons-pool:commons-pool:1.5.6',
                 'org.codehaus.jackson:jackson-mapper-asl:1.8.3',

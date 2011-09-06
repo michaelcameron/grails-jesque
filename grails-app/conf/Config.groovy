@@ -5,9 +5,9 @@ grails {
     jesque {
         pruneWorkersOnStartup = true
         workers {
-            MyWork {
+            MyWorkerPool {
                 queueNames = 'queueName'
-                jobTypes = SimpleJob
+                jobTypes = [(SimpleJob.simpleName):SimpleJob]
             }
         }
     }
