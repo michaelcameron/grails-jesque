@@ -49,7 +49,7 @@ grails.project.dependency.resolution = {
         compile "org.codehaus.geb:geb-spock:0.6.0"
 
         plugins {
-            compile(':redis:1.0.0.M7')
+            compile(':redis:latest.integration')
         }
     }
 }
