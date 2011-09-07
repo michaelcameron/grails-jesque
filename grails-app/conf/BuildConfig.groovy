@@ -20,18 +20,6 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.codehaus.org"
         mavenRepo "http://download.java.net/maven/2/"
         mavenRepo "http://repository.jboss.com/maven2/"
-
-        //wh custom repository
-        def warmhealthResolver = new org.apache.ivy.plugins.resolver.URLResolver()
-        ['libraries', 'builds'].each {
-            warmhealthResolver.addArtifactPattern(
-                    "http://repo.warmhealth.com/${it}/[organisation]/[module]/[revision]/grails-[artifact]-[revision].[ext]")
-            warmhealthResolver.addIvyPattern(
-                    "http://repo.warmhealth.com/${it}/[organisation]/[module]/[revision]/grails-[artifact]-[revision].[ext]")
-        }
-        warmhealthResolver.name = "my-repository"
-        warmhealthResolver.settings = ivySettings
-        resolver warmhealthResolver
     }
     dependencies {
         compile('net.greghaines:jesque:1.0.0',
@@ -45,8 +33,6 @@ grails.project.dependency.resolution = {
         test("org.seleniumhq.selenium:selenium-htmlunit-driver:2.3.1") {
             excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
         }
-
-        compile "org.codehaus.geb:geb-spock:0.6.0"
 
         plugins {
             compile(':redis:latest.integration')
