@@ -1,2 +1,5 @@
 /target/
 *.un~
+.DS_Store
+target
+/test/projects/default/web-app/

@@ -1,15 +1,19 @@
+import grails.plugin.jesque.test.SimpleJob
+
+// configuration for plugin testing - will not be included in the plugin zip
+grails {
+    jesque {
+        pruneWorkersOnStartup = true
+        workers {
+            MyWorkerPool {
+                queueNames = 'queueName'
+                jobTypes = [(SimpleJob.simpleName):SimpleJob]
+            }
+        }
+    }
+}
+
 log4j = {
-    // Example of changing the log pattern for the default console
-    // appender:
-    //
-    appenders {
-        console name:'stdout', layout:pattern(conversionPattern: '%d{HH:mm:ss} [%5p] %-30.30c{2} %m%n')
-    }
-
-    root {
-        info('stdout')
-    }
-
     error  'org.codehaus.groovy.grails.web.servlet',  //  controllers
            'org.codehaus.groovy.grails.web.pages', //  GSP
            'org.codehaus.groovy.grails.web.sitemesh', //  layouts
