@@ -14,7 +14,10 @@ class JesqueGrailsPlugin {
     def grailsVersion = "1.3.0 > *"
     def dependsOn = [redis:"1.0.0M7 > *", hibernate:"1.3.6 > *"]
     def pluginExcludes = [
-            "grails-app/views/error.gsp"
+            "grails-app/views/**",
+            "grails-app/domain/**",
+            "grails-app/jobs/**",
+            "test/**",
     ]
 
     def title = "Jesque - Redis backed job processing"
