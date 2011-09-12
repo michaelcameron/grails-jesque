@@ -32,6 +32,7 @@ grails.project.dependency.resolution = {
 
         test("org.seleniumhq.selenium:selenium-htmlunit-driver:2.3.1") {
             excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
+            export = false
         }
 
         plugins {
