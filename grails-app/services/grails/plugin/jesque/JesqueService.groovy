@@ -76,8 +76,6 @@ class JesqueService {
                 throw new Exception("Invalid queueNames ($queueNames) for pool $key")
 
             def jobTypes = value.jobTypes
-            println "######## " + value.jobTypes
-            println "######## " + value.jobTypes.getClass().name
             if( !(jobTypes instanceof Map) )
                 throw new Exception("Invalid jobTypes ($jobTypes) for pool $key")
 
