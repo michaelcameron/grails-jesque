@@ -89,6 +89,9 @@ following will create a BackgroundJob in the ${grails-app}\jobs folder.
 grails create-jesque-job package.Background
 ```
 
+Unit and integration tests will also automatically be created.  If you have spock installed and listed in your application.properties
+it will create an integration specification instead of a grails integration test.
+
 Roadmap
 ----
 * Ability to execute methods on services without creating a job object

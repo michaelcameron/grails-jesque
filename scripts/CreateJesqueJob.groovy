@@ -30,11 +30,28 @@ includeTargets << grailsScript("_GrailsCreateArtifacts")
 target('default': "Creates a new Jesque job") {
     depends(checkVersion, parseArguments)
 
-    def type = "Job"
+    def suffix = "Job"
+    def type = "JesqueJob"
     promptForName(type: type)
 
     def name = argsMap["params"][0]
-    createArtifact(name: name, suffix: type, type: type, path: "grails-app/jobs")
-    createUnitTest(name: name, suffix: type)
+    createArtifact(name: name, suffix: suffix, type: type, path: "grails-app/jobs")
+    createUnitTest(name: name, suffix: suffix)
+    if(hasSpockInstalled()) {
+        createArtifact(name: name, suffix: "${suffix}Spec", type: "${type}Spec", path: "test/integration")
+    } else {
+        createArtifact(name: name, suffix: "${suffix}IntegrationTests", type: "${type}IntegrationTests", path: "test/integration")
+    }
+//    println hasSpockInstalled()
+    //createIntegrationTest(name: name, suffix: suffix, type: "${type}IntegrationTests")
+}
+
+private boolean hasSpockInstalled() {
+    for(file in grailsSettings.testDependencies) {
+        if(file?.name?.contains('spock-core')) {
+            return true
+        }
+    }
+    return false
 }
 
