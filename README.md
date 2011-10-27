@@ -86,7 +86,7 @@ You can run the script create-jesque-job to create a shell of a job for you auto
 following will create a BackgroundJob in the ${grails-app}\jobs folder.
 
 ```bash
-grails create-jesque-job Background
+grails create-jesque-job package.Background
 ```
 
 Roadmap
