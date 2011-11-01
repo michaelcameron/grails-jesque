@@ -1,18 +1,19 @@
+import grails.plugin.jesque.GrailsJobClass
+import grails.plugin.jesque.JobArtefactHandler
+import net.greghaines.jesque.Config
 import net.greghaines.jesque.ConfigBuilder
 import net.greghaines.jesque.client.ClientPoolImpl
-import net.greghaines.jesque.Config
 import net.greghaines.jesque.meta.dao.impl.FailureDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.KeysDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl
-import grails.plugin.jesque.JobArtefactHandler
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import grails.plugin.jesque.GrailsJobClass
 
 class JesqueGrailsPlugin {
-    def version = "0.11.M6"
+
+    def version = "0.11.M7"
     def grailsVersion = "1.3.0 > *"
-    def dependsOn = [redis:"1.0.0M7 > *", hibernate:"1.3.6 > *"]
+    def dependsOn = [redis: "1.0.0M7 > *", hibernate: "1.3.6 > *"]
     def pluginExcludes = [
             "grails-app/views/**",
             "grails-app/domain/**",
@@ -30,10 +31,10 @@ Grails Jesque plug-in. Redis backed job processing
 
     def license = "APACHE"
     def developers = [
-        [ name: "Michael Cameron", email: "michael.e.cameron@gmail.com" ],
-        [ name: "Ted Naleid", email: "contact@naleid.com" ] ]
+            [name: "Michael Cameron", email: "michael.e.cameron@gmail.com"],
+            [name: "Ted Naleid", email: "contact@naleid.com"]]
     def documentation = "https://github.com/michaelcameron/grails-jesque"
-    def scm = [ url: "https://github.com/michaelcameron/grails-jesque" ]
+    def scm = [url: "https://github.com/michaelcameron/grails-jesque"]
 
     def watchedResources = [
             "file:./grails-app/jobs/**/*Job.groovy",
@@ -52,21 +53,21 @@ Grails Jesque plug-in. Redis backed job processing
         def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
 
         def jesqueConfigBuilder = new ConfigBuilder()
-        if( jesqueConfigMap.namespace )
+        if(jesqueConfigMap.namespace)
             jesqueConfigBuilder = jesqueConfigBuilder.withNamespace(jesqueConfigMap.namespace)
-        if( redisConfigMap.host )
+        if(redisConfigMap.host)
             jesqueConfigBuilder = jesqueConfigBuilder.withHost(redisConfigMap.host)
-        if( redisConfigMap.port )
+        if(redisConfigMap.port)
             jesqueConfigBuilder = jesqueConfigBuilder.withPort(redisConfigMap.port)
-        if( redisConfigMap.timeout )
+        if(redisConfigMap.timeout)
             jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout)
-        if( redisConfigMap.password )
+        if(redisConfigMap.password)
             jesqueConfigBuilder = jesqueConfigBuilder.withPassword(redisConfigMap.password)
 
         def jesqueConfigInstance = jesqueConfigBuilder.build()
 
         jesqueConfig(Config, jesqueConfigInstance.host, jesqueConfigInstance.port, jesqueConfigInstance.timeout,
-                        jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database)
+                     jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database)
         jesqueClient(ClientPoolImpl, jesqueConfigInstance, ref('redisPool'))
 
         failureDao(FailureDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
@@ -101,6 +102,27 @@ Grails Jesque plug-in. Redis backed job processing
         //log.info "Create jesque async methods"
         //def jesqueService = applicationContext.jesqueService
         //jesqueService.createAsyncMethods()
+
+        // if(application.serviceClasses) {
+        //            application.serviceClasses.each { service ->
+        //                service?.clazz?.methods?.each { Method method ->
+        //                    if(method.getAnnotation(Async)) {
+        //                        println "replacing ${method.name}"
+        //                        def oldMethod = service.metaClass.getMetaMethod("${method.name}")
+        //
+        //                        service.metaClass."${method.name}AsyncJobMethod" = {->
+        //                            println "in async method"
+        //                            oldMethod.invoke(delegate, args)
+        //                        }
+        //
+        //                        service.metaClass."${method.name}" = {->
+        //                            def metaMethod = delegate.metaClass.getMetaMethod("${method.name}AsyncJobMethod", args)
+        //                            metaMethod.invoke(delegate, args)
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
     }
 
     def doWithApplicationContext = { applicationContext ->
@@ -109,7 +131,7 @@ Grails Jesque plug-in. Redis backed job processing
         def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
         log.info "Found ${jesqueConfigMap.size()} workers"
         //todo:merge in a default config
-        if( jesqueConfigMap?.pruneWorkersOnStartup )
+        if(jesqueConfigMap?.pruneWorkersOnStartup)
             jesqueService.pruneWorkers()
         jesqueService.startWorkersFromConfig()
     }

@@ -82,6 +82,16 @@ Jobs
 Jobs should be placed in grails-app\jobs similar to the [Quartz](http://grails.org/Quartz+plugin) plugin.
 However, to not clash with quartz, and to retain similarties with resque, the method to execute must be called perform.
 
+You can run the script create-jesque-job to create a shell of a job for you automatically.  The
+following will create a BackgroundJob in the ${grails-app}\jobs folder.
+
+```bash
+grails create-jesque-job package.Background
+```
+
+Unit and integration tests will also automatically be created.  If you have spock installed and listed in your application.properties
+it will create an integration specification instead of a grails integration test.
+
 Roadmap
 ----
 * Ability to execute methods on services without creating a job object

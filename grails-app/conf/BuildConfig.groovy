@@ -37,6 +37,7 @@ grails.project.dependency.resolution = {
 
         plugins {
             compile(':redis:latest.integration')
+             test ":spock:0.5-groovy-1.7"
         }
     }
 }
