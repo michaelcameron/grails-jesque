@@ -3,6 +3,9 @@ import grails.plugin.jesque.test.RedisAutoWireJob
 
 // configuration for plugin testing - will not be included in the plugin zip
 grails {
+    redis {
+        password = ''
+    }
     jesque {
         pruneWorkersOnStartup = true
         workers {

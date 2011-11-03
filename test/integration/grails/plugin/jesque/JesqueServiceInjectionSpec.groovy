@@ -6,18 +6,12 @@ import grails.plugin.spock.IntegrationSpec
 import net.greghaines.jesque.meta.dao.FailureDAO
 import net.greghaines.jesque.meta.dao.QueueInfoDAO
 
-/**
- */
 class JesqueServiceInjectionSpec extends IntegrationSpec {
 
     JesqueService jesqueService
     QueueInfoDAO queueInfoDao
     FailureDAO failureDao
     RedisService redisService
-
-    def setup() {
-        redisService.flushDB()
-    }
 
     void "test autowirejob with redis service injection with worker"() {
         given:
@@ -33,26 +27,27 @@ class JesqueServiceInjectionSpec extends IntegrationSpec {
         }
 
         then:
-        assert existingProcessedCount + 1 == queueInfoDao.processedCount
-        assert existingFailureCount == failureDao.count
-        assert redisService.hello == "world"
-        assert redisService.worked == "true"
+        existingProcessedCount + 1 == queueInfoDao.processedCount
+        existingFailureCount == failureDao.count
+        redisService.hello == "world"
+        redisService.worked == "true"
     }
 
     void "test autowirejob with redis service injection via config"() {
         given:
-        def queueName = 'redisAutoWireJob'
+        def queueName = 'redisAutoWireJobQueueName'
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
         redisService.hello = "world"
 
         when:
         jesqueService.enqueue(queueName, RedisAutoWireJob.simpleName)
+        sleep(2000)
 
         then:
-        assert existingProcessedCount + 1 == queueInfoDao.processedCount
-        assert existingFailureCount == failureDao.count
-        assert redisService.hello == "world"
-        assert redisService.worked == "true"
+        existingProcessedCount + 1 == queueInfoDao.processedCount
+        existingFailureCount == failureDao.count
+        redisService.hello == "world"
+        redisService.worked == "true"
     }
 }
