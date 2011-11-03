@@ -111,7 +111,7 @@ class JesqueService {
                 def argNumber = 0
                 def parameterString = parameterTypes.collect{ type -> "$type.name ${argNumber++}" }.join(',')
                 argNumber = 0
-                def argumentString = parameterTypes.colelct{ type -> "${argNumber++}" }.join(',')
+                def argumentString = parameterTypes.collect{ type -> "${argNumber++}" }.join(',')
                 def closureString = "{"
                 jobClass.metaClass."${method.name}Async" = Eval.me """
                 { $parameterString ->
