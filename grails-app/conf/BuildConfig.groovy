@@ -22,11 +22,11 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.jboss.com/maven2/"
     }
     dependencies {
-        compile('net.greghaines:jesque:1.0.0',
+        compile('net.greghaines:jesque:1.0.1',
                 'redis.clients:jedis:2.0.0',
                 'commons-pool:commons-pool:1.5.6',
-                'org.codehaus.jackson:jackson-mapper-asl:1.8.3',
-                'org.codehaus.jackson:jackson-core-asl:1.8.3') {
+                'org.codehaus.jackson:jackson-mapper-asl:1.8.4',
+                'org.codehaus.jackson:jackson-core-asl:1.8.4') {
             transitive = false
         }
 
@@ -34,10 +34,9 @@ grails.project.dependency.resolution = {
             excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
             export = false
         }
-
-        plugins {
-            compile(':redis:latest.integration')
-             test ":spock:0.5-groovy-1.7"
-        }
+    }
+    plugins {
+        compile(':redis:1.0.0.M9')
+        test(":spock:0.5-groovy-1.7")
     }
 }

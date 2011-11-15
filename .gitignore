@@ -1,2 +1,6 @@
 /target/
 *.un~
+
+*.iws
+*.iml
+*.ipr
