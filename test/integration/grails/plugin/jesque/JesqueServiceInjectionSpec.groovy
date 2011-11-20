@@ -15,16 +15,17 @@ class JesqueServiceInjectionSpec extends IntegrationSpec {
     FailureDAO failureDao
     RedisService redisService
 
-    def setup() {
-        redisService.flushDB()
-    }
+//    def setupSpec() {
+//        redisService.flushDB()
+//    }
 
     void "test autowirejob with redis service injection with worker"() {
         given:
         def queueName = 'redisAutoWireJob'
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
-        redisService.hello = "world"
+        redisService.hello = ""
+        redisService.worked = "false"
 
         when:
         jesqueService.enqueue(queueName, RedisAutoWireJob.simpleName)
@@ -33,26 +34,28 @@ class JesqueServiceInjectionSpec extends IntegrationSpec {
         }
 
         then:
-        assert existingProcessedCount + 1 == queueInfoDao.processedCount
-        assert existingFailureCount == failureDao.count
-        assert redisService.hello == "world"
-        assert redisService.worked == "true"
+        existingProcessedCount + 1 == queueInfoDao.processedCount
+        existingFailureCount == failureDao.count
+        redisService.hello == "world"
+        redisService.worked == "true"
     }
 
     void "test autowirejob with redis service injection via config"() {
         given:
-        def queueName = 'redisAutoWireJob'
+        def queueName = 'redisAutoWireJobQueueName'
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
-        redisService.hello = "world"
+        redisService.hello = ""
+        redisService.worked = "false"
 
         when:
         jesqueService.enqueue(queueName, RedisAutoWireJob.simpleName)
+        sleep(2000)
 
         then:
-        assert existingProcessedCount + 1 == queueInfoDao.processedCount
-        assert existingFailureCount == failureDao.count
-        assert redisService.hello == "world"
-        assert redisService.worked == "true"
+        existingProcessedCount + 1 == queueInfoDao.processedCount
+        existingFailureCount == failureDao.count
+        redisService.hello == "world"
+        redisService.worked == "true"
     }
 }
