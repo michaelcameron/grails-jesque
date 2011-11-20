@@ -1,6 +1,8 @@
 /target/
+plugin.xml
 *.un~
 
 *.iws
 *.iml
 *.ipr
+*.zip
