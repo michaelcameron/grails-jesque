@@ -96,6 +96,12 @@ Roadmap
 ----
 * Ability to execute methods on services without creating a job object
 * Wrap above ability automatically with annotation and dynamically creating a method with the same name + "Async" suffix
+* And something like resque-scheduler to add most of the good parts of Quartz
+
+Release Notes
+=============
+
+* 0.2.0 - released 10/17/2011 - First publicly announced version
 
 License
 -------
