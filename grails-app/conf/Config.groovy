@@ -1,5 +1,6 @@
 import grails.plugin.jesque.test.SimpleJob
 import grails.plugin.jesque.test.RedisAutoWireJob
+import grails.plugin.jesque.test.ScheduledJob
 
 // configuration for plugin testing - will not be included in the plugin zip
 grails {
@@ -11,7 +12,10 @@ grails {
         workers {
             MyWorkerPool {
                 queueNames = 'queueName'
-                jobTypes = [(SimpleJob.simpleName):SimpleJob]
+                jobTypes = [
+                        (SimpleJob.simpleName):SimpleJob,
+                        (ScheduledJob.simpleName):ScheduledJob,
+                ]
             }
             RedisWorkerPool {
                 queueNames = 'redisAutoWireJobQueueName'

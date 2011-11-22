@@ -30,6 +30,8 @@ grails.project.dependency.resolution = {
             transitive = false
         }
 
+        compile('joda-time:joda-time:2.0')
+
         test("org.seleniumhq.selenium:selenium-htmlunit-driver:2.3.1") {
             excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
             export = false
