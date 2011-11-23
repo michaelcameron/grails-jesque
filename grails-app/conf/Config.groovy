@@ -26,9 +26,6 @@ grails {
 }
 
 log4j = {
-    // Example of changing the log pattern for the default console
-    // appender:
-    //
     appenders {
         console name:'stdout', layout:pattern(conversionPattern: '%d{HH:mm:ss} [%5p] %-30.30c{2} %m%n')
     }
@@ -50,4 +47,6 @@ log4j = {
            'net.sf.ehcache.hibernate'
 
     warn   'org.mortbay.log'
+
+    debug 'grails.plugin.jesque'
 }
