@@ -64,20 +64,11 @@ class JesqueService {
         }
     }
 
-    void startWorkersFromConfig() {
-        def jesqueConfigMap = grailsApplication.config?.grails?.jesque ?: [:]
+    void startWorkersFromConfig(Map jesqueConfigMap) {
         jesqueConfigMap?.workers?.each{ key, value ->
             log.info "Starting workers for pool $key"
 
             def workers = value.workers ? value.workers.toInteger() : 1
-
-            def queueNames = value.queueNames
-            if( !((queueNames instanceof String) || (queueNames instanceof List<String>)) )
-                throw new Exception("Invalid queueNames ($queueNames) for pool $key")
-
-            def jobTypes = value.jobTypes
-            if( !(jobTypes instanceof Map) )
-                throw new Exception("Invalid jobTypes ($jobTypes) for pool $key")
 
             workers.times {
                 startWorker(value.queueNames, value.jobTypes)

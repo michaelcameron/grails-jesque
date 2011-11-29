@@ -13,10 +13,11 @@ import grails.plugin.jesque.JesqueSchedulerService
 import grails.plugin.jesque.GrailsJobClassProperty
 import grails.plugin.jesque.JesqueService
 import grails.plugin.jesque.JesqueSchedulerThreadService
+import grails.plugin.jesque.JesqueConfigurationService
 
 class JesqueGrailsPlugin {
 
-    def version = "0.3.0.M1"
+    def version = "0.3.0.M2"
     def grailsVersion = "1.3.0 > *"
     def dependsOn = [redis: "1.0.0M7 > *", hibernate: "1.3.6 > *"]
     def pluginExcludes = [
@@ -160,16 +161,16 @@ Grails Jesque plug-in. Redis backed job processing
 
         log.info "Starting jesque workers"
         JesqueService jesqueService = applicationContext.jesqueService
+        JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
         def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
+        jesqueConfigurationService.validateConfig(jesqueConfigMap)
 
         log.info "Found ${jesqueConfigMap.size()} workers"
-        //todo:merge in a default config
         if(jesqueConfigMap?.pruneWorkersOnStartup)
             jesqueService.pruneWorkers()
 
-        jesqueService.startWorkersFromConfig()
-
-
+        jesqueConfigurationService.mergeClassConfigurationIntoConfigMap(jesqueConfigMap)
+        jesqueService.startWorkersFromConfig(jesqueConfigMap)
     }
 
     def onChange = { event ->

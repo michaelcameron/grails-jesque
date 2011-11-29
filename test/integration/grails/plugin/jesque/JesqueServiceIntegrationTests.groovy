@@ -8,12 +8,23 @@ import grails.plugin.jesque.test.ExceptionJob
 import grails.plugin.jesque.test.DomainJob
 import grails.plugin.jesque.test.SimpleJob
 import grails.plugin.jesque.test.AutoWireJob
+import grails.test.GrailsUnitTestCase
+import grails.plugin.redis.RedisService
 
-class JesqueServiceIntegrationTests {
+class JesqueServiceIntegrationTests extends GrailsUnitTestCase {
 
     def jesqueService
     QueueInfoDAO queueInfoDao
     FailureDAO failureDao
+    RedisService redisService
+
+    void setUp() {
+        redisService.flushDB()
+    }
+
+    void tearDown() {
+        redisService.flushDB()
+    }
 
     void testWorkerSimpleJob() {
         def queueName = 'testQueue'

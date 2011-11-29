@@ -1,7 +1,5 @@
 package grails.plugin.jesque.test
 
-import grails.plugin.jesque.test.Foo
-
 class DomainJob {
 
     void perform(id) {

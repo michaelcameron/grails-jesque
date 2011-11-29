@@ -13,6 +13,14 @@ class JesqueServiceInjectionSpec extends IntegrationSpec {
     FailureDAO failureDao
     RedisService redisService
 
+    void setup() {
+        redisService.flushDB()
+    }
+
+    void tearDown() {
+        redisService.flushDB()
+    }
+
     void "test autowirejob with redis service injection with worker"() {
         given:
         def queueName = 'redisAutoWireJob'
