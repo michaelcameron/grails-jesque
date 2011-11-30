@@ -17,7 +17,7 @@ import grails.plugin.jesque.JesqueConfigurationService
 
 class JesqueGrailsPlugin {
 
-    def version = "0.3.0.M2"
+    def version = "0.3.0.M3"
     def grailsVersion = "1.3.0 > *"
     def dependsOn = [redis: "1.0.0M7 > *", hibernate: "1.3.6 > *"]
     def pluginExcludes = [
@@ -162,7 +162,7 @@ Grails Jesque plug-in. Redis backed job processing
         log.info "Starting jesque workers"
         JesqueService jesqueService = applicationContext.jesqueService
         JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
-        def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
+        def jesqueConfigMap = application.config.grails.jesque
         jesqueConfigurationService.validateConfig(jesqueConfigMap)
 
         log.info "Found ${jesqueConfigMap.size()} workers"
