@@ -14,6 +14,7 @@ import grails.plugin.jesque.GrailsJobClassProperty
 import grails.plugin.jesque.JesqueService
 import grails.plugin.jesque.JesqueSchedulerThreadService
 import grails.plugin.jesque.JesqueConfigurationService
+import grails.util.GrailsUtil
 
 class JesqueGrailsPlugin {
 
@@ -54,9 +55,12 @@ Grails Jesque plug-in. Redis backed job processing
     }
 
     def doWithSpring = {
+        log.info "Merging in default jesque config"
+        loadJesqueConfig(application.config.grails.jesque)
+
         log.info "Creating jesque core beans"
-        def redisConfigMap = application.config?.grails?.redis ?: [:]
-        def jesqueConfigMap = application.config?.grails?.jesque ?: [:]
+        def redisConfigMap = application.config.grails.redis
+        def jesqueConfigMap = application.config.grails.jesque
 
         def jesqueConfigBuilder = new ConfigBuilder()
         if(jesqueConfigMap.namespace)
@@ -64,9 +68,9 @@ Grails Jesque plug-in. Redis backed job processing
         if(redisConfigMap.host)
             jesqueConfigBuilder = jesqueConfigBuilder.withHost(redisConfigMap.host)
         if(redisConfigMap.port)
-            jesqueConfigBuilder = jesqueConfigBuilder.withPort(redisConfigMap.port)
+            jesqueConfigBuilder = jesqueConfigBuilder.withPort(redisConfigMap.port as Integer)
         if(redisConfigMap.timeout)
-            jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout)
+            jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout as Integer)
         if(redisConfigMap.password)
             jesqueConfigBuilder = jesqueConfigBuilder.withPassword(redisConfigMap.password)
 
@@ -155,19 +159,25 @@ Grails Jesque plug-in. Redis backed job processing
             scheduleJob(jobClass, applicationContext)
         }
 
-        log.info "Launching jesque scheduler thread"
-        JesqueSchedulerThreadService jesqueSchedulerThreadService = applicationContext.jesqueSchedulerThreadService
-        jesqueSchedulerThreadService.startSchedulerThread()
+        def jesqueConfigMap = application.config.grails.jesque
+
+        if( jesqueConfigMap.schedulerThreadActive ) {
+            log.info "Launching jesque scheduler thread"
+            JesqueSchedulerThreadService jesqueSchedulerThreadService = applicationContext.jesqueSchedulerThreadService
+            jesqueSchedulerThreadService.startSchedulerThread()
+        }
 
         log.info "Starting jesque workers"
         JesqueService jesqueService = applicationContext.jesqueService
         JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
-        def jesqueConfigMap = application.config.grails.jesque
+
         jesqueConfigurationService.validateConfig(jesqueConfigMap)
 
         log.info "Found ${jesqueConfigMap.size()} workers"
-        if(jesqueConfigMap?.pruneWorkersOnStartup)
+        if(jesqueConfigMap.pruneWorkersOnStartup) {
+            log.info "Pruning workers"
             jesqueService.pruneWorkers()
+        }
 
         jesqueConfigurationService.mergeClassConfigurationIntoConfigMap(jesqueConfigMap)
         jesqueService.startWorkersFromConfig(jesqueConfigMap)
@@ -179,5 +189,19 @@ Grails Jesque plug-in. Redis backed job processing
 
     def onConfigChange = { event ->
         //todo: manage changes
+    }
+
+    private ConfigObject loadJesqueConfig(ConfigObject jesqueConfig) {
+        GroovyClassLoader classLoader = new GroovyClassLoader(getClass().classLoader)
+
+        // merging default jesque config into main application config
+        def defaultConfig = new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('DefaultJesqueConfig'))
+
+        //may look weird, but we must merge the user config into default first so the user overrides default,
+        // then merge back into the main to bring default values in that were not overridden
+        def mergedConfig = defaultConfig.grails.jesque.merge(jesqueConfig)
+        jesqueConfig.merge( mergedConfig )
+
+        return jesqueConfig
     }
 }

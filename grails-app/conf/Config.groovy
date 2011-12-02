@@ -25,6 +25,16 @@ grails {
     }
 }
 
+environment {
+    test {
+        grails {
+            jesque {
+                schedulerThreadActive = false
+            }
+        }
+    }
+}
+
 log4j = {
     appenders {
         console name:'stdout', layout:pattern(conversionPattern: '%d{HH:mm:ss} [%5p] %-30.30c{2} %m%n')

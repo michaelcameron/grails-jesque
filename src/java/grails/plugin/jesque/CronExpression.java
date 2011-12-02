@@ -1,5 +1,8 @@
 package grails.plugin.jesque;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -259,6 +262,22 @@ public class CronExpression implements Serializable, Cloneable {
         buildExpression(this.cronExpression);
     }
 
+    public CronExpression(String cronExpression, TimeZone timeZone) throws ParseException {
+        this(cronExpression);
+
+        setTimeZone(timeZone);
+    }
+
+    public CronExpression(String cronExpression, DateTimeZone timeZone) throws ParseException {
+        this(cronExpression);
+
+        setTimeZone(timeZone);
+    }
+
+    public boolean isSatisfiedBy(DateTime date) {
+        return isSatisfiedBy(date.toDate());
+    }
+
     /**
      * Indicates whether the given date satisfies the cron expression. Note that
      * milliseconds are ignored, so two Dates falling on different milliseconds
@@ -279,6 +298,10 @@ public class CronExpression implements Serializable, Cloneable {
         Date timeAfter = getTimeAfter(testDateCal.getTime());
 
         return ((timeAfter != null) && (timeAfter.equals(originalDate)));
+    }
+
+    public DateTime getNextValidTimeAfter(DateTime date) {
+        return new DateTime(getTimeAfter(date.toDate()));
     }
 
     /**
@@ -350,6 +373,14 @@ public class CronExpression implements Serializable, Cloneable {
      */
     public void setTimeZone(TimeZone timeZone) {
         this.timeZone = timeZone;
+    }
+
+    /**
+     * Sets the time zone for which  this <code>CronExpression</code>
+     * will be resolved.
+     */
+    public void setTimeZone(DateTimeZone timeZone) {
+        this.timeZone = timeZone.toTimeZone();
     }
 
     /**
@@ -1502,8 +1533,6 @@ public class CronExpression implements Serializable, Cloneable {
                 cl.set(Calendar.HOUR_OF_DAY, 0);
                 cl.set(Calendar.DAY_OF_MONTH, 1);
                 cl.set(Calendar.MONTH, 0);
-                // '- 1' because calendar is 0-based for this field, and we are
-                // 1-based
                 cl.set(Calendar.YEAR, year);
                 continue;
             }
