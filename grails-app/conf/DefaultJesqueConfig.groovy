@@ -9,6 +9,7 @@ environments {
     test {
         grails{
             jesque {
+                pruneWorkersOnStartup = false
                 schedulerThreadActive = false
             }
         }

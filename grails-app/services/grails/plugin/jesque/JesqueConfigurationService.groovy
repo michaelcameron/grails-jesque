@@ -1,9 +1,11 @@
 package grails.plugin.jesque
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.joda.time.DateTimeZone
 
 class JesqueConfigurationService {
     def grailsApplication
+    def jesqueSchedulerService
 
     Boolean validateConfig(Map jesqueConfigMap) {
         jesqueConfigMap?.workers?.each{ workerPoolName, value ->
@@ -27,34 +29,29 @@ class JesqueConfigurationService {
         return true
     }
 
-    void mergeClassConfigurationIntoConfigMap(Map jesqueConfigMap) {
-        grailsApplication.jobClasses.each { jobArtefact ->
-            Class jobClass = jobArtefact.clazz
+    void mergeClassConfigurationIntoConfigMap(ConfigObject jesqueConfigMap) {
+        grailsApplication.jobClasses.each { GrailsJobClass jobArtefact ->
             def alreadyConfiguredPool = jesqueConfigMap.workers.find{ poolName, poolConfig ->
                 poolConfig.jobTypes.any{ jobName, jobClassValue ->
-                    jobClassValue == jobClass
+                    jobClassValue == jobArtefact.clazz
                 }
             }
-
-            def queue = GrailsClassUtils.isStaticProperty(jobClass, GrailsJobClassProperty.QUEUE) ? jobClass[GrailsJobClassProperty.QUEUE] : GrailsJobClassProperty.DEFAULT_QUEUE
-            def workerPool = GrailsClassUtils.isStaticProperty(jobClass, GrailsJobClassProperty.WORKER_POOL) ? jobClass[GrailsJobClassProperty.WORKER_POOL] : GrailsJobClassProperty.DEFAULT_WORKER_POOL
-            def jobNames = GrailsClassUtils.isStaticProperty(jobClass, GrailsJobClassProperty.JOB_NAMES) ? jobClass[GrailsJobClassProperty.JOB_NAMES] : [jobClass.simpleName, jobClass.name]
 
             if( alreadyConfiguredPool ) {
                 //already configured, make sure pool name matches, and queue is listed, otherwise error, do nothing else
-                if( workerPool != GrailsJobClassProperty.DEFAULT_WORKER_POOL && workerPool != alreadyConfiguredPool.getKey() ) {
-                    throw new Exception("Class ${jobClass.name} specifies worker pool ${workerPool} but configuration file has ${alreadyConfiguredPool.getKey()}")
-                }
+                if( jobArtefact.workerPool != GrailsJobClassProperty.DEFAULT_WORKER_POOL && jobArtefact.workerPool != alreadyConfiguredPool.getKey() )
+                    throw new Exception("Class ${jobArtefact.fullName} specifies worker pool ${jobArtefact.workerPool} but configuration file has ${alreadyConfiguredPool.getKey()}")
 
                 if( alreadyConfiguredPool.value.queueNames instanceof String )
                     alreadyConfiguredPool.value.queueNames = [alreadyConfiguredPool.value.queueNames]
-                if( queue != GrailsJobClassProperty.DEFAULT_QUEUE && !(queue in alreadyConfiguredPool.value.queueNames) ) {
-                    throw new Exception("Class ${jobClass.name} specifies queue name ${queue} but worker pool ${alreadyConfiguredPool.getKey()} has ${alreadyConfiguredPool.value.queueNames}")
-                }
+
+                if( jobArtefact.queue != GrailsJobClassProperty.DEFAULT_QUEUE && !(jobArtefact.queue in alreadyConfiguredPool.value.queueNames) )
+                    throw new Exception("Class ${jobArtefact.fullName} specifies queue name ${jobArtefact.queue} but worker pool ${alreadyConfiguredPool.getKey()} has ${alreadyConfiguredPool.value.queueNames}")
+
                 return
             }
 
-            def workerPoolConfig = jesqueConfigMap.workers[workerPool]
+            def workerPoolConfig = jesqueConfigMap.workers."${jobArtefact.workerPool}"
             if( !workerPoolConfig ) {
                 workerPoolConfig.queueNames = []
                 workerPoolConfig.jobTypes = [:]
@@ -63,12 +60,27 @@ class JesqueConfigurationService {
             if( workerPoolConfig.queueNames instanceof String )
                 workerPoolConfig.queueNames = [workerPoolConfig.queueNames]
 
-            jobNames.each{ jobName ->
-                workerPoolConfig.jobTypes += [(jobName):jobClass]
+            jobArtefact.jobNames.each{ jobName ->
+                workerPoolConfig.jobTypes += [(jobName):jobArtefact.clazz]
             }
 
-            if( !(queue in workerPoolConfig.queueNames) )
-                workerPoolConfig.queueNames += queue
+            if( !(jobArtefact.queue in workerPoolConfig.queueNames) )
+                workerPoolConfig.queueNames += jobArtefact.queue
+        }
+    }
+
+    void scheduleJob(GrailsJobClass jobClass) {
+        log.info("Scheduling ${jobClass.fullName}")
+
+        jobClass.triggers.each {key, trigger ->
+            String name = trigger.triggerAttributes[GrailsJobClassProperty.NAME]
+            String cronExpression = trigger.triggerAttributes[GrailsJobClassProperty.CRON_EXPRESSION]
+            DateTimeZone timeZone = DateTimeZone.forID(trigger.triggerAttributes[GrailsJobClassProperty.TIMEZONE])
+            String queue = trigger.triggerAttributes[GrailsJobClassProperty.JESQUE_QUEUE]
+            String jesqueJobName = trigger.triggerAttributes[GrailsJobClassProperty.JESQUE_JOB_NAME]
+            List jesqueJobArguments = trigger.triggerAttributes[GrailsJobClassProperty.JESQUE_JOB_ARGUMENTS] ?: []
+
+            jesqueSchedulerService.schedule(name, cronExpression, timeZone, queue, jesqueJobName, jesqueJobArguments)
         }
     }
 }

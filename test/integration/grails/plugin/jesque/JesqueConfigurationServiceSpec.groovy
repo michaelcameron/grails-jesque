@@ -3,10 +3,14 @@ package grails.plugin.jesque
 import grails.plugin.spock.IntegrationSpec
 import grails.plugin.jesque.test.SelfConfiguredJob
 import grails.plugin.jesque.test.SimpleJob
+import grails.plugin.jesque.test.ScheduledTestJob
+import org.joda.time.DateTimeZone
 
 class JesqueConfigurationServiceSpec extends IntegrationSpec{
 
     def jesqueConfigurationService
+    def grailsApplication
+    def scheduledJobDaoService
 
     void "test mergeClassConfigurationIntoConfigMap worker pool mismatch"() {
         given:
@@ -93,5 +97,25 @@ class JesqueConfigurationServiceSpec extends IntegrationSpec{
         config.grails.jesque.workers[GrailsJobClassProperty.DEFAULT_WORKER_POOL].queueNames == [GrailsJobClassProperty.DEFAULT_QUEUE]
         config.grails.jesque.workers[GrailsJobClassProperty.DEFAULT_WORKER_POOL].jobTypes.containsKey(SimpleJob.canonicalName)
         config.grails.jesque.workers[GrailsJobClassProperty.DEFAULT_WORKER_POOL].jobTypes.containsKey(SimpleJob.name)
+    }
+
+    void "test scheduleJob for grails artefact class"() {
+        given:
+        GrailsJobClass jobArtefactClass = grailsApplication.getArtefact(DefaultGrailsJobClass.JOB, ScheduledTestJob.class.name)
+
+        when:
+        jesqueConfigurationService.scheduleJob(jobArtefactClass)
+
+        then:
+        def scheduledJobs = scheduledJobDaoService.all
+        scheduledJobs != null
+        scheduledJobs.size() == 1
+        def scheduledJob = scheduledJobs.first()
+        scheduledJob.name == 'ScheduledJob'
+        scheduledJob.cronExpression == '0/10 * * * * ?'
+        scheduledJob.timeZone.ID == 'Pacific/Honolulu'
+        scheduledJob.jesqueJobQueue == 'queueName'
+        scheduledJob.jesqueJobName == ScheduledTestJob.simpleName
+        scheduledJob.args == ['MyArgument']
     }
 }

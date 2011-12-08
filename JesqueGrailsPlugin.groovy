@@ -8,9 +8,6 @@ import net.greghaines.jesque.meta.dao.impl.KeysDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.context.ApplicationContext
-import grails.plugin.jesque.JesqueSchedulerService
-import grails.plugin.jesque.GrailsJobClassProperty
 import grails.plugin.jesque.JesqueService
 import grails.plugin.jesque.JesqueSchedulerThreadService
 import grails.plugin.jesque.JesqueConfigurationService
@@ -18,7 +15,7 @@ import grails.util.GrailsUtil
 
 class JesqueGrailsPlugin {
 
-    def version = "0.3.0.M3"
+    def version = "0.3.0.M6"
     def grailsVersion = "1.3.0 > *"
     def dependsOn = [redis: "1.0.0M7 > *", hibernate: "1.3.6 > *"]
     def pluginExcludes = [
@@ -108,23 +105,6 @@ Grails Jesque plug-in. Redis backed job processing
         }
     }
 
-    def scheduleJob = {GrailsJobClass jobClass, ApplicationContext ctx ->
-        JesqueSchedulerService jesqueSchedulerService = ctx.jesqueSchedulerService
-        def fullName = jobClass.fullName
-        // add job to scheduler, and associate triggers with it
-
-        jobClass.triggers.each {key, trigger ->
-            jesqueSchedulerService.schedule(
-                    trigger.triggerAttributes[GrailsJobClassProperty.NAME],
-                    trigger.triggerAttributes[GrailsJobClassProperty.CRON_EXPRESSION],
-                    trigger.triggerAttributes[GrailsJobClassProperty.JESQUE_QUEUE],
-                    trigger.triggerAttributes[GrailsJobClassProperty.JESQUE_JOB_NAME],
-                    []
-            )
-        }
-        log.info("Job ${fullName} scheduled")
-    }
-
     def doWithDynamicMethods = { applicationContext ->
         //log.info "Create jesque async methods"
         //def jesqueService = applicationContext.jesqueService
@@ -153,10 +133,11 @@ Grails Jesque plug-in. Redis backed job processing
     }
 
     def doWithApplicationContext = { applicationContext ->
+        JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
+
         log.info "Scheduling Jesque Jobs"
-        application.jobClasses.each {jobClass ->
-            scheduleJob.delegate = delegate
-            scheduleJob(jobClass, applicationContext)
+        application.jobClasses.each{ jobClass ->
+            jesqueConfigurationService.scheduleJob(jobClass)
         }
 
         def jesqueConfigMap = application.config.grails.jesque
@@ -169,7 +150,6 @@ Grails Jesque plug-in. Redis backed job processing
 
         log.info "Starting jesque workers"
         JesqueService jesqueService = applicationContext.jesqueService
-        JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
 
         jesqueConfigurationService.validateConfig(jesqueConfigMap)
 
