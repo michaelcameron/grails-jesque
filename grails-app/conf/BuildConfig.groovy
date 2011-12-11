@@ -36,7 +36,8 @@ grails.project.dependency.resolution = {
         }
     }
     plugins {
-        compile(':redis:1.0.0.M9')
+        compile(':redis:1.1')
         test(":spock:0.5-groovy-1.7")
+        test(":hibernate:1.3.6")
     }
 }
