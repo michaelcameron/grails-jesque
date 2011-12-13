@@ -1,6 +1,5 @@
 package grails.plugin.jesque
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.joda.time.DateTimeZone
 
 class JesqueConfigurationService {

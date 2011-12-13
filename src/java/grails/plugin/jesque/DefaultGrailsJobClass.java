@@ -24,7 +24,7 @@ public class DefaultGrailsJobClass extends AbstractInjectableGrailsClass impleme
         // registering additional triggersClosure from 'triggersClosure' closure if present
         Closure triggersClosure = (Closure) GrailsClassUtils.getStaticPropertyValue(getClazz(), "triggers");
 
-        TriggersConfigBuilder builder = new TriggersConfigBuilder(getFullName());
+        TriggersConfigBuilder builder = new TriggersConfigBuilder(this);
 
         if (triggersClosure != null) {
             builder.build(triggersClosure);
@@ -53,7 +53,7 @@ public class DefaultGrailsJobClass extends AbstractInjectableGrailsClass impleme
 
     public List getJobNames() {
         List jobNames = (List)getPropertyValue(GrailsJobClassProperty.JOB_NAMES);
-        if( jobNames == null )
+        if( jobNames == null || jobNames.size() == 0 )
             jobNames = Arrays.asList(getClazz().getName(), getClazz().getSimpleName() );
         return jobNames;
     }
