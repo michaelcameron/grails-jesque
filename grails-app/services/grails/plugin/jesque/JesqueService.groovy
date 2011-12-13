@@ -14,6 +14,8 @@ class JesqueService {
 
     static transactional = false
 
+    static final int DEFAULT_WORKER_POOL_SIZE = 5
+
     def grailsApplication
     def sessionFactory
     def jesqueConfig
@@ -64,11 +66,11 @@ class JesqueService {
         }
     }
 
-    void startWorkersFromConfig(Map jesqueConfigMap) {
-        jesqueConfigMap?.workers?.each{ key, value ->
+    void startWorkersFromConfig(ConfigObject jesqueConfigMap) {
+        jesqueConfigMap.workers.each{ key, value ->
             log.info "Starting workers for pool $key"
 
-            def workers = value.workers ? value.workers.toInteger() : 1
+            def workers = value.workers ? value.workers.toInteger() : DEFAULT_WORKER_POOL_SIZE
 
             workers.times {
                 startWorker(value.queueNames, value.jobTypes)
