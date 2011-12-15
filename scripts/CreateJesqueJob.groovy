@@ -21,22 +21,16 @@ import org.apache.tools.ant.taskdefs.Ant
  *
  * @author Christian Oestreich
  */
-
-Ant.property(environment: "env")
-grailsHome = Ant.antProject.properties."env.GRAILS_HOME"
-
-
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_GrailsCreateArtifacts")
 
 target('default': "Creates a new Jesque job") {
     depends(checkVersion, parseArguments)
 
-    def suffix = "Job"
+    def name = argsMap["params"][0]
+    def suffix = name.endsWith('Job') ? '' : "Job"
     def type = "JesqueJob"
     promptForName(type: type)
-
-    def name = argsMap["params"][0]
     createArtifact(name: name, suffix: suffix, type: type, path: "grails-app/jobs")
     createUnitTest(name: name, suffix: suffix)
     if(hasSpockInstalled()) {
