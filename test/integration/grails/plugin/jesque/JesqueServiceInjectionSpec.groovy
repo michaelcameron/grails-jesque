@@ -19,6 +19,7 @@ class JesqueServiceInjectionSpec extends IntegrationSpec {
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
         redisService.hello = ""
+        redisService.worked = ""
 
         when:
         jesqueService.enqueue(queueName, RedisAutoWireJob.simpleName)
@@ -39,6 +40,7 @@ class JesqueServiceInjectionSpec extends IntegrationSpec {
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
         redisService.hello = ""
+        redisService.worked = ""
 
         when:
         jesqueService.enqueue(queueName, RedisAutoWireJob.simpleName)
