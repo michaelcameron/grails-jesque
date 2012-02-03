@@ -14,7 +14,7 @@ class JesqueService {
 
     static transactional = false
 
-    static final int DEFAULT_WORKER_POOL_SIZE = 5
+    static final int DEFAULT_WORKER_POOL_SIZE = 3
 
     def grailsApplication
     def sessionFactory
