@@ -10,6 +10,8 @@ While it uses jesque for the core functionality it makes it groovier to use in g
 There is also a grails [jesque-web](https://github.com/michaelcameron/grails-jesque-web) plugin initially ported from the [jesque-web](https://github.com/gresrun/jesque-web) spring-mvc app, which itself was based on the Sinatra web app resque-web in [resque](https://github.com/defunkt/resque).
 Either UI will allow you to see what's in your queues and view and re-process failed messages.
 
+A scheduler (a la Quartz) has been added to support scheduled injection of jobs. The syntax is very similar to the grails Quartz plugin. 
+
 How do I use it?
 ----------------
 Add the jesque plugin to grails, it will automatically pull in jesque with it's dependencies, and the grails redis plugin.
@@ -89,6 +91,26 @@ following will create a BackgroundJob in the ${grails-app}\jobs folder.
 grails create-jesque-job package.Background
 ```
 
+```groovy
+class MyJob {
+    static queue = 'MyJesqueQueue'
+    static workerPool = 'MyWorkerPook'
+
+    def injectedService //auto-wired
+
+    static triggers = {
+        cron name: 'MyJob', cronExpression: '0 0 23 * * ? *'
+    }
+
+    def perform() {
+        log.info "Executing Job"
+
+        injectedService.doSomeWork()
+    }
+}
+```
+
+
 Unit and integration tests will also automatically be created.  If you have spock installed and listed in your application.properties
 it will create an integration specification instead of a grails integration test.
 
@@ -96,13 +118,14 @@ Roadmap
 ----
 * Ability to execute methods on services without creating a job object
 * Wrap above ability automatically with annotation and dynamically creating a method with the same name + "Async" suffix
-* And something like resque-scheduler to add most of the good parts of Quartz
+* Create grails/groovy docs (gdoc?) to extensively document options
 
 Release Notes
 =============
 
-* 0.2.0 - released 10/17/2011 - First publicly announced version
-
+* 0.2.0 - released 2011-10-17 - First publicly announced version
+* 0.3.0 - released 2011-02-03 - First implementation of scheduler 
+ 
 License
 -------
 Copyright 2011 Michael Cameron
