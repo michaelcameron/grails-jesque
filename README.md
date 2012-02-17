@@ -119,6 +119,7 @@ Roadmap
 * Ability to execute methods on services without creating a job object
 * Wrap above ability automatically with annotation and dynamically creating a method with the same name + "Async" suffix
 * Create grails/groovy docs (gdoc?) to extensively document options
+* Support job/config changes when running as `grails run-app
 
 Release Notes
 =============
