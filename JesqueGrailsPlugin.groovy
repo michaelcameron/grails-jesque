@@ -26,9 +26,7 @@ class JesqueGrailsPlugin {
     ]
 
     def title = "Jesque - Redis backed job processing"
-    def description = '''\\
-Grails Jesque plug-in. Redis backed job processing
-'''
+    def description = 'Grails Jesque plug-in. Redis backed job processing'
 
     def author = "Michael Cameron"
     def authorEmail = "michael.e.cameron@gmail.com"

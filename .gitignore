@@ -6,3 +6,4 @@ plugin.xml
 *.iml
 *.ipr
 *.zip
+stacktrace.log
