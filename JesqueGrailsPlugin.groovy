@@ -38,6 +38,8 @@ class JesqueGrailsPlugin {
     def documentation = "https://github.com/michaelcameron/grails-jesque"
     def scm = [url: "https://github.com/michaelcameron/grails-jesque"]
 
+    def loadAfter = ['core', 'hibernate']
+
     def watchedResources = [
             "file:./grails-app/jobs/**/*Job.groovy",
             "file:./plugins/*/grails-app/jobs/**/*Job.groovy"
