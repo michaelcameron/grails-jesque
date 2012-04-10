@@ -26,12 +26,20 @@ class JesqueService {
         jesqueClient.enqueue(queueName, job)
     }
 
+    void enqueue(String queueName, Class jobClazz, List args) {
+        enqueue(queueName, jobClazz.name, args)
+    }
+
     void enqueue(String queueName, String jobName, List args) {
         jesqueClient.enqueue(queueName, new Job(jobName, args))
     }
 
     void enqueue(String queueName, String jobName, Object... args) {
         jesqueClient.enqueue(queueName, new Job(jobName, args))
+    }
+
+    void enqueue(String queueName, Class jobClazz, Object... args) {
+        enqueue(queueName, jobClazz.name, args)
     }
 
     Worker startWorker(String queueName, String jobName, Class jobClass) {
