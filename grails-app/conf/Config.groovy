@@ -2,6 +2,9 @@ import grails.plugin.jesque.test.SimpleJob
 import grails.plugin.jesque.test.RedisAutoWireJob
 import grails.plugin.jesque.test.ScheduledTestJob
 
+grails.views.default.codec="none" // none, html, base64
+grails.views.gsp.encoding="UTF-8"
+
 // configuration for plugin testing - will not be included in the plugin zip
 grails {
     redis {

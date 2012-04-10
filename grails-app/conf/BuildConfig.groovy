@@ -42,7 +42,7 @@ grails.project.dependency.resolution = {
         test(":spock:0.6-SNAPSHOT") {
             export = false
         }
-        test(":hibernate:2.0.0") {
+        test(":hibernate:$grailsVersion") {
             export = false
         }
     }
