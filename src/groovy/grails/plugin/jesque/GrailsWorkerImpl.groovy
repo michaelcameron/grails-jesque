@@ -11,9 +11,10 @@ import net.greghaines.jesque.Job
 import net.greghaines.jesque.utils.ReflectionUtils
 import net.greghaines.jesque.worker.UnpermittedJobException
 import net.greghaines.jesque.worker.WorkerImpl
+import javax.servlet.ServletContextListener
 
 
-class GrailsWorkerImpl extends WorkerImpl {
+class GrailsWorkerImpl extends WorkerImpl implements ServletContextListener {
 
     BeanBuilder beanBuilder
     GrailsApplication grailsApplication
@@ -78,5 +79,13 @@ class GrailsWorkerImpl extends WorkerImpl {
         } finally {
             this.jedis.del(key(WORKER, this.name));
         }
+    }
+
+    void contextInitialized(javax.servlet.ServletContextEvent servletContextEvent) {
+        //do nothing, only contextDestroyed is pertinent
+    }
+
+    void contextDestroyed(javax.servlet.ServletContextEvent servletContextEvent) {
+        this.end(false)
     }
 }
