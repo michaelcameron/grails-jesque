@@ -15,7 +15,7 @@ import grails.util.GrailsUtil
 
 class JesqueGrailsPlugin {
 
-    def version = "0.3.0"
+    def version = "0.4.0-SNAPSHOT"
     def grailsVersion = "1.3.0 > *"
     def dependsOn = [redis: "1.0.0M7 > *"]
     def pluginExcludes = [
