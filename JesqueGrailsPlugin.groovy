@@ -18,7 +18,7 @@ import org.springframework.context.ApplicationContext
 class JesqueGrailsPlugin {
 
     def version = "0.4.0-SNAPSHOT"
-    def grailsVersion = "1.3.0 > *"
+    def grailsVersion = "2.0.0 > *"
     def dependsOn = [redis: "1.0.0M7 > *"]
     def pluginExcludes = [
             "grails-app/views/**",
