@@ -124,9 +124,14 @@ Roadmap
 Release Notes
 =============
 
-* 0.2.0 - released 2011-10-17 - First publicly announced version
-* 0.3.0 - released 2011-02-03 - First implementation of scheduler 
- 
+* 0.2.0 - released 2011-10-17
+    * First publicly announced version
+* 0.3.0 - released 2011-02-03
+    * First implementation of scheduler
+* 0.4.0-SNAPSHOT - release 2012-5-20
+    * Gracefully shutdown threads
+    * Handle changes to scheduled jobs during development
+
 License
 -------
 Copyright 2011 Michael Cameron

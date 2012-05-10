@@ -8,13 +8,10 @@ import static net.greghaines.jesque.worker.WorkerEvent.JOB_PROCESS
 import static net.greghaines.jesque.worker.WorkerEvent.JOB_EXECUTE
 import net.greghaines.jesque.Config
 import net.greghaines.jesque.Job
-import net.greghaines.jesque.utils.ReflectionUtils
 import net.greghaines.jesque.worker.UnpermittedJobException
 import net.greghaines.jesque.worker.WorkerImpl
-import javax.servlet.ServletContextListener
 
-
-class GrailsWorkerImpl extends WorkerImpl implements ServletContextListener {
+class GrailsWorkerImpl extends WorkerImpl {
 
     BeanBuilder beanBuilder
     GrailsApplication grailsApplication
@@ -86,6 +83,7 @@ class GrailsWorkerImpl extends WorkerImpl implements ServletContextListener {
     }
 
     void contextDestroyed(javax.servlet.ServletContextEvent servletContextEvent) {
+        log.debug "Shuting down worker due to servlet context ending"
         this.end(false)
     }
 }

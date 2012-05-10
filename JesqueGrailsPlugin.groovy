@@ -12,6 +12,8 @@ import grails.plugin.jesque.JesqueService
 import grails.plugin.jesque.JesqueSchedulerThreadService
 import grails.plugin.jesque.JesqueConfigurationService
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
+import org.springframework.context.ApplicationContext
 
 class JesqueGrailsPlugin {
 
@@ -46,7 +48,6 @@ class JesqueGrailsPlugin {
     ]
 
     def artefacts = [new JobArtefactHandler()]
-
 
     def doWithWebDescriptor = { xml ->
     }
@@ -106,37 +107,13 @@ class JesqueGrailsPlugin {
     }
 
     def doWithDynamicMethods = { applicationContext ->
-        //log.info "Create jesque async methods"
-        //def jesqueService = applicationContext.jesqueService
-        //jesqueService.createAsyncMethods()
-
-        // if(application.serviceClasses) {
-        //            application.serviceClasses.each { service ->
-        //                service?.clazz?.methods?.each { Method method ->
-        //                    if(method.getAnnotation(Async)) {
-        //                        println "replacing ${method.name}"
-        //                        def oldMethod = service.metaClass.getMetaMethod("${method.name}")
-        //
-        //                        service.metaClass."${method.name}AsyncJobMethod" = {->
-        //                            println "in async method"
-        //                            oldMethod.invoke(delegate, args)
-        //                        }
-        //
-        //                        service.metaClass."${method.name}" = {->
-        //                            def metaMethod = delegate.metaClass.getMetaMethod("${method.name}AsyncJobMethod", args)
-        //                            metaMethod.invoke(delegate, args)
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
     }
 
-    def doWithApplicationContext = { applicationContext ->
+    def doWithApplicationContext = { GrailsApplicationContext applicationContext ->
         JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
 
         log.info "Scheduling Jesque Jobs"
-        application.jobClasses.each{ jobClass ->
+        application.jobClasses.each{ GrailsJobClass jobClass ->
             jesqueConfigurationService.scheduleJob(jobClass)
         }
 
@@ -145,6 +122,8 @@ class JesqueGrailsPlugin {
         if( jesqueConfigMap.schedulerThreadActive ) {
             log.info "Launching jesque scheduler thread"
             JesqueSchedulerThreadService jesqueSchedulerThreadService = applicationContext.jesqueSchedulerThreadService
+            log.info applicationContext.hashCode()
+            log.info jesqueSchedulerThreadService.hashCode()
             jesqueSchedulerThreadService.startSchedulerThread()
         }
 
@@ -161,10 +140,37 @@ class JesqueGrailsPlugin {
 
         jesqueConfigurationService.mergeClassConfigurationIntoConfigMap(jesqueConfigMap)
         jesqueService.startWorkersFromConfig(jesqueConfigMap)
+
+        applicationContext
     }
 
-    def onChange = { event ->
-        //todo: manage changes
+    def onChange = {event ->
+        Class source = event.source
+        if(!application.isArtefactOfType(JobArtefactHandler.TYPE, source)) {
+            return
+        }
+
+        log.debug("Job ${source} changed. Reloading...")
+
+        ApplicationContext context = event.ctx
+        JesqueConfigurationService jesqueConfigurationService = context?.jesqueConfigurationService
+
+        if(context && jesqueConfigurationService) {
+            GrailsJobClass jobClass = application.getJobClass(source.name)
+            if(jobClass)
+                jesqueConfigurationService.deleteScheduleJob(jobClass)
+
+            jobClass = (GrailsJobClass)application.addArtefact(JobArtefactHandler.TYPE, source)
+
+            beans {
+                configureJobBeans.delegate = delegate
+                configureJobBeans(jobClass)
+            }
+
+            jesqueConfigurationService.scheduleJob(jobClass)
+        } else {
+            log.error("Application context or Jesque Scheduler not found. Can't reload Jesque plugin.")
+        }
     }
 
     def onConfigChange = { event ->

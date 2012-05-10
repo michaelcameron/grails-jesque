@@ -17,6 +17,16 @@ class ScheduledJobDaoService {
         redis.sadd(ScheduledJob.JOB_INDEX, scheduledJob.name)
     }
 
+    void delete( String name ) {
+        redisService.withRedis { Jedis redis ->
+            delete( redis, name )
+        }
+    }
+
+    void delete( Jedis redis, String name) {
+        redis.del(ScheduledJob.getRedisKeyForName(name))
+    }
+
     ScheduledJob findByName(String name) {
         redisService.withRedis { Jedis redis ->
             findByName(redis, name)

@@ -6,8 +6,8 @@ class JesqueConfigurationService {
     def grailsApplication
     def jesqueSchedulerService
 
-    Boolean validateConfig(Map jesqueConfigMap) {
-        jesqueConfigMap?.workers?.each{ workerPoolName, value ->
+    Boolean validateConfig(ConfigObject jesqueConfigMap) {
+        jesqueConfigMap.workers.each{ workerPoolName, value ->
             if( value.workers && !(value.workers instanceof Integer)  )
                 throw new Exception("Invalid worker count ${value.workers} for pool $workerPoolName")
 
@@ -80,6 +80,16 @@ class JesqueConfigurationService {
             List jesqueJobArguments = trigger.triggerAttributes[GrailsJobClassProperty.JESQUE_JOB_ARGUMENTS] ?: []
 
             jesqueSchedulerService.schedule(name, cronExpression, timeZone, queue, jesqueJobName, jesqueJobArguments)
+        }
+    }
+
+    void deleteScheduleJob(GrailsJobClass jobClass) {
+        log.info("Remove schedule for ${jobClass.fullName}")
+
+        jobClass.triggers.each {key, trigger ->
+            String name = trigger.triggerAttributes[GrailsJobClassProperty.NAME]
+
+            jesqueSchedulerService.deleteSchedule(name)
         }
     }
 }

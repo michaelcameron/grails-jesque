@@ -14,7 +14,7 @@ import org.joda.time.DateTimeZone
 
 //TODO: failure between multi and exec may lead to redis connection to be put back into pool still in multi
 class JesqueSchedulerService {
-    static transactionl = false
+    static transactional = false
 
     def redisService
     def jesqueService
@@ -69,6 +69,10 @@ class JesqueSchedulerService {
         }
     }
 
+    void deleteSchedule(String name) {
+        scheduledJobDaoService.delete(name)
+    }
+
     Integer enqueueReadyJobs(DateTime until, String hostName) {
         //check to see if there are any servers that have missed removing check-in
         //if so get the intersection of WATIING jobs that are not in the nextFireTimeIndex and add
@@ -80,7 +84,7 @@ class JesqueSchedulerService {
         Long earliestAcquiredJobTime = acquiredJobs.min{ it.score }.score.toLong()
         Long now = DateTime.now().millis
         if( earliestAcquiredJobTime - now > 0 ) {
-            log.debug "Waiting to fire time to enqueue jobs"
+            log.debug "Waiting for fire time to enqueue jobs"
             Thread.sleep(earliestAcquiredJobTime - now)
         }
 
