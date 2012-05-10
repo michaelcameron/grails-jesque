@@ -34,7 +34,7 @@ class JesqueService {
     }
 
     void enqueue(String queueName, Class jobClazz, List args) {
-        enqueue(queueName, jobClazz.name, args)
+        enqueue(queueName, jobClazz.simpleName, args)
     }
 
     void enqueue(String queueName, String jobName, List args) {
@@ -46,7 +46,7 @@ class JesqueService {
     }
 
     void enqueue(String queueName, Class jobClazz, Object... args) {
-        enqueue(queueName, jobClazz.name, args)
+        enqueue(queueName, jobClazz.simpleName, args)
     }
 
     Worker startWorker(String queueName, String jobName, Class jobClass) {
