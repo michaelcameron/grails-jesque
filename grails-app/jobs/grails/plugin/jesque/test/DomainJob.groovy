@@ -2,9 +2,8 @@ package grails.plugin.jesque.test
 
 class DomainJob {
 
-    void perform(id) {
-        def foo = Foo.get(id)
-        foo.name = foo.name + foo.name
-        foo.save()
+    void perform(name) {
+        Foo foo = new Foo(name: name)
+        foo.save(failOnError: true)
     }
 }

@@ -19,7 +19,7 @@ class JesqueGrailsPlugin {
 
     def version = "0.4.0-SNAPSHOT"
     def grailsVersion = "2.0.0 > *"
-    def dependsOn = [redis: "1.0.0M7 > *"]
+    def dependsOn = [redis: "1.3.1 > *"]
     def pluginExcludes = [
             "grails-app/views/**",
             "grails-app/domain/**",
