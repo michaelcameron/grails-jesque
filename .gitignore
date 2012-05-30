@@ -7,3 +7,5 @@ plugin.xml
 *.ipr
 *.zip
 stacktrace.log
+
+out/

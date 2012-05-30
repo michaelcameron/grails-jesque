@@ -42,25 +42,23 @@ class JesqueServiceIntegrationTests extends GrailsUnitTestCase {
     }
 
     void testWorkerDomainJob() {
-        def queueName = 'testQueue'
+        def queueName = 'domainJobTestQueue'
 
         def fooName = 'name'
-        def foo = new Foo(name:fooName)
-        foo.save(failOnError:true)
 
         def existingProcessedCount = queueInfoDao.processedCount
         def existingFailureCount = failureDao.count
 
-        jesqueService.enqueue(queueName, DomainJob.simpleName, foo.id )
+        jesqueService.enqueue(queueName, DomainJob.simpleName, fooName )
         jesqueService.withWorker(queueName, DomainJob.simpleName, DomainJob) {
             sleep(2000)
         }
 
-        foo.refresh()
+        assert Foo.count() == 1
 
-        assert existingProcessedCount + 1 == queueInfoDao.processedCount
         assert existingFailureCount == failureDao.count
-        assert fooName + fooName == foo.name
+        assert existingProcessedCount + 1 == queueInfoDao.processedCount
+        assert fooName == Foo.list().first().name
     }
 
     void testAutoWireJob() {

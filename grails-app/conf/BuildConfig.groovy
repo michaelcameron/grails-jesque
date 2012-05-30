@@ -22,13 +22,12 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.jboss.com/maven2/"
     }
     dependencies {
-        compile('net.greghaines:jesque:1.1.2',
-                'redis.clients:jedis:2.0.0',
-                'commons-pool:commons-pool:1.6',
-                'org.codehaus.jackson:jackson-mapper-asl:1.9.6',
-                'org.codehaus.jackson:jackson-core-asl:1.9.6') {
+        compile('commons-pool:commons-pool:1.6') {
             transitive = false
         }
+
+        compile('net.greghaines:jesque:1.2.0')
+        compile('redis.clients:jedis:2.1.0')
 
         compile('joda-time:joda-time:2.0')
 
@@ -38,11 +37,11 @@ grails.project.dependency.resolution = {
         }
     }
     plugins {
-        compile(':redis:1.0.0.M9')
+        compile(':redis:1.3.1')
         compile(':release:2.0.0', ':rest-client-builder:1.0.2') {
             export = false
         }
-        test(":spock:0.6-SNAPSHOT") {
+        test(":spock:0.6") {
             export = false
         }
         test(":hibernate:$grailsVersion") {
