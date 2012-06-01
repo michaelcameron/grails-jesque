@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DefaultGrailsJobClass extends AbstractInjectableGrailsClass implements GrailsJobClass {
+public class DefaultGrailsJesqueJobClass extends AbstractInjectableGrailsClass implements GrailsJesqueJobClass {
 
     public static final String JOB = "Job";
 
     private Map triggers = new HashMap();
 
-    public DefaultGrailsJobClass(Class clazz) {
+    public DefaultGrailsJesqueJobClass(Class clazz) {
         super(clazz, JOB);
         evaluateTriggers();
     }
@@ -37,22 +37,22 @@ public class DefaultGrailsJobClass extends AbstractInjectableGrailsClass impleme
     }
 
     public String getQueue() {
-        String queue = (String)getPropertyValue(GrailsJobClassProperty.QUEUE);
+        String queue = (String)getPropertyValue(GrailsJesqueJobClassProperty.QUEUE);
         if( queue == null )
-            queue = GrailsJobClassProperty.DEFAULT_QUEUE;
+            queue = GrailsJesqueJobClassProperty.DEFAULT_QUEUE;
         return queue;
     }
 
     public String getWorkerPool() {
-        String workerPool = (String)getPropertyValue(GrailsJobClassProperty.WORKER_POOL);
+        String workerPool = (String)getPropertyValue(GrailsJesqueJobClassProperty.WORKER_POOL);
         if( workerPool == null )
-            workerPool = GrailsJobClassProperty.DEFAULT_WORKER_POOL;
+            workerPool = GrailsJesqueJobClassProperty.DEFAULT_WORKER_POOL;
 
         return workerPool;
     }
 
     public List getJobNames() {
-        List jobNames = (List)getPropertyValue(GrailsJobClassProperty.JOB_NAMES);
+        List jobNames = (List)getPropertyValue(GrailsJesqueJobClassProperty.JOB_NAMES);
         if( jobNames == null || jobNames.size() == 0 )
             jobNames = Arrays.asList(getClazz().getName(), getClazz().getSimpleName() );
         return jobNames;

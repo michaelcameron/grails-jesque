@@ -1,5 +1,5 @@
-import grails.plugin.jesque.GrailsJobClass
-import grails.plugin.jesque.JobArtefactHandler
+import grails.plugin.jesque.GrailsJesqueJobClass
+import grails.plugin.jesque.JesqueJobArtefactHandler
 import net.greghaines.jesque.Config
 import net.greghaines.jesque.ConfigBuilder
 import net.greghaines.jesque.client.ClientPoolImpl
@@ -47,7 +47,7 @@ class JesqueGrailsPlugin {
             "file:./plugins/*/grails-app/jobs/**/*Job.groovy"
     ]
 
-    def artefacts = [new JobArtefactHandler()]
+    def artefacts = [new JesqueJobArtefactHandler()]
 
     def doWithWebDescriptor = { xml ->
     }
@@ -84,19 +84,19 @@ class JesqueGrailsPlugin {
         workerInfoDao(WorkerInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
 
         log.info "Creating jesque job beans"
-        application.jobClasses.each {jobClass ->
+        application.jesqueJobClasses.each {jobClass ->
             configureJobBeans.delegate = delegate
             configureJobBeans(jobClass)
         }
     }
 
-    def configureJobBeans = {GrailsJobClass jobClass ->
+    def configureJobBeans = {GrailsJesqueJobClass jobClass ->
         def fullName = jobClass.fullName
 
         "${fullName}Class"(MethodInvokingFactoryBean) {
             targetObject = ref("grailsApplication", true)
             targetMethod = "getArtefact"
-            arguments = [JobArtefactHandler.TYPE, jobClass.fullName]
+            arguments = [JesqueJobArtefactHandler.TYPE, jobClass.fullName]
         }
 
         "${fullName}"(ref("${fullName}Class")) {bean ->
@@ -113,7 +113,7 @@ class JesqueGrailsPlugin {
         JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
 
         log.info "Scheduling Jesque Jobs"
-        application.jobClasses.each{ GrailsJobClass jobClass ->
+        application.jesqueJobClasses.each{ GrailsJesqueJobClass jobClass ->
             jesqueConfigurationService.scheduleJob(jobClass)
         }
 
@@ -146,7 +146,7 @@ class JesqueGrailsPlugin {
 
     def onChange = {event ->
         Class source = event.source
-        if(!application.isArtefactOfType(JobArtefactHandler.TYPE, source)) {
+        if(!application.isArtefactOfType(JesqueJobArtefactHandler.TYPE, source)) {
             return
         }
 
@@ -156,11 +156,11 @@ class JesqueGrailsPlugin {
         JesqueConfigurationService jesqueConfigurationService = context?.jesqueConfigurationService
 
         if(context && jesqueConfigurationService) {
-            GrailsJobClass jobClass = application.getJobClass(source.name)
+            GrailsJesqueJobClass jobClass = application.getJobClass(source.name)
             if(jobClass)
                 jesqueConfigurationService.deleteScheduleJob(jobClass)
 
-            jobClass = (GrailsJobClass)application.addArtefact(JobArtefactHandler.TYPE, source)
+            jobClass = (GrailsJesqueJobClass)application.addArtefact(JesqueJobArtefactHandler.TYPE, source)
 
             beans {
                 configureJobBeans.delegate = delegate

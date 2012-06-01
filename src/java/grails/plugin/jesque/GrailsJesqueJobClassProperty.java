@@ -1,6 +1,6 @@
 package grails.plugin.jesque;
 
-public class GrailsJobClassProperty {
+public class GrailsJesqueJobClassProperty {
     public static final String CRON_EXPRESSION = "cronExpression";
 
     public static final String JESQUE_JOB_NAME = "jesqueJobName";

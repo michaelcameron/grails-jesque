@@ -4,7 +4,6 @@ import grails.plugin.spock.IntegrationSpec
 import grails.plugin.jesque.test.SelfConfiguredJob
 import grails.plugin.jesque.test.SimpleJob
 import grails.plugin.jesque.test.ScheduledTestJob
-import org.joda.time.DateTimeZone
 
 class JesqueConfigurationServiceSpec extends IntegrationSpec{
 
@@ -93,15 +92,15 @@ class JesqueConfigurationServiceSpec extends IntegrationSpec{
 
         then:
         noExceptionThrown()
-        config.grails.jesque.workers[GrailsJobClassProperty.DEFAULT_WORKER_POOL]
-        config.grails.jesque.workers[GrailsJobClassProperty.DEFAULT_WORKER_POOL].queueNames == [GrailsJobClassProperty.DEFAULT_QUEUE]
-        config.grails.jesque.workers[GrailsJobClassProperty.DEFAULT_WORKER_POOL].jobTypes.containsKey(SimpleJob.canonicalName)
-        config.grails.jesque.workers[GrailsJobClassProperty.DEFAULT_WORKER_POOL].jobTypes.containsKey(SimpleJob.name)
+        config.grails.jesque.workers[GrailsJesqueJobClassProperty.DEFAULT_WORKER_POOL]
+        config.grails.jesque.workers[GrailsJesqueJobClassProperty.DEFAULT_WORKER_POOL].queueNames == [GrailsJesqueJobClassProperty.DEFAULT_QUEUE]
+        config.grails.jesque.workers[GrailsJesqueJobClassProperty.DEFAULT_WORKER_POOL].jobTypes.containsKey(SimpleJob.canonicalName)
+        config.grails.jesque.workers[GrailsJesqueJobClassProperty.DEFAULT_WORKER_POOL].jobTypes.containsKey(SimpleJob.name)
     }
 
     void "test scheduleJob for grails artefact class"() {
         given:
-        GrailsJobClass jobArtefactClass = grailsApplication.getArtefact(DefaultGrailsJobClass.JOB, ScheduledTestJob.class.name)
+        GrailsJesqueJobClass jobArtefactClass = grailsApplication.getArtefact(JesqueJobArtefactHandler.TYPE, ScheduledTestJob.class.name)
 
         when:
         jesqueConfigurationService.scheduleJob(jobArtefactClass)

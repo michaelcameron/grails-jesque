@@ -4,18 +4,18 @@ import org.codehaus.groovy.grails.commons.ArtefactHandlerAdapter;
 
 import java.lang.reflect.Method;
 
-public class JobArtefactHandler extends ArtefactHandlerAdapter {
+public class JesqueJobArtefactHandler extends ArtefactHandlerAdapter {
 
-    public static final String TYPE = "Job";
+    public static final String TYPE = "JesqueJob";
     public static final String PERFORM = "perform";
 
-    public JobArtefactHandler() {
-        super(TYPE, GrailsJobClass.class, DefaultGrailsJobClass.class, null);
+    public JesqueJobArtefactHandler() {
+        super(TYPE, GrailsJesqueJobClass.class, DefaultGrailsJesqueJobClass.class, null);
     }
 
     public boolean isArtefactClass(Class clazz) {
-        // class shouldn't be null and shoud ends with Job suffix
-        if(clazz == null || !clazz.getName().endsWith(DefaultGrailsJobClass.JOB))
+        // class shouldn't be null and should end with Job suffix
+        if(clazz == null || !clazz.getName().endsWith(DefaultGrailsJesqueJobClass.JOB))
             return false;
 
         // and should have a perform() method with any signature
