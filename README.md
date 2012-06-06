@@ -128,7 +128,7 @@ Release Notes
     * First publicly announced version
 * 0.3.0 - released 2011-02-03
     * First implementation of scheduler
-* 0.4.0-SNAPSHOT - released 2012-5-31
+* 0.4.0 - released 2012-6-6
     * Gracefully shutdown threads
     * Handle changes to scheduled jobs during development
     * Upgrade to Jedis 2.1.0 (Note, this is binary incompatible with Jedis 2.0.0, Grails Jesque < 0.4.0 will not run with Jedis 2.1.0 and >= 0.4.0 must run with Jedis >= 2.1.0)
