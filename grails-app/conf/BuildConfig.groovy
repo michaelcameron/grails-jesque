@@ -38,7 +38,7 @@ grails.project.dependency.resolution = {
     }
     plugins {
         compile(':redis:1.3.1')
-        compile(':release:2.0.0', ':rest-client-builder:1.0.2') {
+        compile(':release:2.0.3', ':rest-client-builder:1.0.2') {
             export = false
         }
         test(":spock:0.6") {
