@@ -139,7 +139,10 @@ class JesqueGrailsPlugin {
         }
 
         jesqueConfigurationService.mergeClassConfigurationIntoConfigMap(jesqueConfigMap)
-        jesqueService.startWorkersFromConfig(jesqueConfigMap)
+        if(jesqueConfigMap.createWorkersOnStartup) {
+            log.info "Creating workers"
+            jesqueService.startWorkersFromConfig(jesqueConfigMap)
+        }
 
         applicationContext
     }
