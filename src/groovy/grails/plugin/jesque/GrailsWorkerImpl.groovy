@@ -77,13 +77,4 @@ class GrailsWorkerImpl extends WorkerImpl {
             this.jedis.del(key(WORKER, this.name));
         }
     }
-
-    void contextInitialized(javax.servlet.ServletContextEvent servletContextEvent) {
-        //do nothing, only contextDestroyed is pertinent
-    }
-
-    void contextDestroyed(javax.servlet.ServletContextEvent servletContextEvent) {
-        log.debug "Shuting down worker due to servlet context ending"
-        this.end(false)
-    }
 }

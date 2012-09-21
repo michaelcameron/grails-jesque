@@ -79,7 +79,7 @@ class JesqueService {
     }
 
     void stopAllWorkers() {
-        log.debug "Stopping ${workers.size()} jesque workers"
+        log.info "Stopping ${workers.size()} jesque workers"
 
         List<Worker> workersToRemove = workers.collect{ it }
         workersToRemove.each { Worker worker ->
