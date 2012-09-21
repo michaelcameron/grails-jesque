@@ -186,8 +186,6 @@ class JesqueSchedulerService {
     }
 
     public void cleanUpStaleServers() {
-        log.info "Finding stale servers to clean up"
-
         def staleServerHash = [:]
 
         redisService.withRedis {Jedis redis ->

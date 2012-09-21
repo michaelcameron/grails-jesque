@@ -83,13 +83,14 @@ class JesqueSchedulerThreadService implements Runnable {
                 if( attempt != 1 )
                     jesqueSchedulerService.cleanUpStaleServer(hostName)
 
-                mainThreadLoop()
-
-                break
+                return closure()
             } catch(Exception exception) {
                 log.error "Jesque scheduler exception, attempt $attempt of $MAX_RETRY_ATTEMPTS", exception
-                if( attempt != MAX_RETRY_ATTEMPTS ) {
-                    Double sleepTime = Math.min( MAX_SLEEP_TIME_MS, random.nextDouble() * Math.pow(2, attempt))
+
+                if( threadState.get() != JesqueScheduleThreadState.Running ) {
+                    log.info "Aborting retries because thread state is ${threadState.get()}"
+                } else if( attempt != MAX_RETRY_ATTEMPTS ) {
+                    Double sleepTime = Math.min( MAX_SLEEP_TIME_MS, 500 + random.nextDouble() * Math.pow(2, attempt))
                     Thread.sleep(sleepTime.toLong())
                 } else {
                     log.error "Could not run scheduler thread after $MAX_RETRY_ATTEMPTS attempts, stopping for good"
