@@ -14,6 +14,7 @@ import grails.plugin.jesque.JesqueConfigurationService
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.springframework.context.ApplicationContext
+import grails.plugin.jesque.TriggersConfigBuilder
 
 class JesqueGrailsPlugin {
 
@@ -110,6 +111,8 @@ class JesqueGrailsPlugin {
     }
 
     def doWithApplicationContext = { GrailsApplicationContext applicationContext ->
+        TriggersConfigBuilder.metaClass.getGrailsApplication = { -> application }
+
         JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
 
         log.info "Scheduling Jesque Jobs"

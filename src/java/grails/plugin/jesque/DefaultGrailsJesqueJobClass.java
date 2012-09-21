@@ -13,14 +13,13 @@ public class DefaultGrailsJesqueJobClass extends AbstractInjectableGrailsClass i
 
     public static final String JOB = "Job";
 
-    private Map triggers = new HashMap();
+    private Map triggers;
 
     public DefaultGrailsJesqueJobClass(Class clazz) {
         super(clazz, JOB);
-        evaluateTriggers();
     }
 
-    private void evaluateTriggers() {
+    private Map evaluateTriggers() {
         // registering additional triggersClosure from 'triggersClosure' closure if present
         Closure triggersClosure = (Closure) GrailsClassUtils.getStaticPropertyValue(getClazz(), "triggers");
 
@@ -28,11 +27,15 @@ public class DefaultGrailsJesqueJobClass extends AbstractInjectableGrailsClass i
 
         if (triggersClosure != null) {
             builder.build(triggersClosure);
-            triggers = (Map)builder.getTriggers();
+            return (Map)builder.getTriggers();
+        } else {
+            return new HashMap();
         }
     }
 
     public Map getTriggers() {
+        if( triggers == null )
+            triggers = evaluateTriggers();
         return triggers;
     }
 
