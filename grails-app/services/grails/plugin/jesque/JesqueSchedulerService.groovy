@@ -185,33 +185,43 @@ class JesqueSchedulerService {
         }
     }
 
-    void cleanUpStaleServers() {
+    public void cleanUpStaleServers() {
+        log.info "Finding stale servers to clean up"
+
+        def staleServerHash = [:]
+
         redisService.withRedis {Jedis redis ->
             def now = new DateTime()
             def serverCheckInHash = redis.hgetAll("$SCHEDULER_PREFIX:checkIn")
-            def staleServerHash = serverCheckInHash.findAll{ Seconds.secondsBetween(new DateTime(it.value as Long), now).seconds > STALE_SERVER_SECONDS }
+            staleServerHash = serverCheckInHash.findAll{ Seconds.secondsBetween(new DateTime(it.value as Long), now).seconds > STALE_SERVER_SECONDS }
+        }
 
-            staleServerHash.each{ hostName, lastCheckInTimeMillis ->
-                log.info "Cleaning up stale server $hostName"
-                def staleServerAcquiredJobsSetName = Trigger.getAcquiredIndexByHostName(hostName)
+        staleServerHash.each{ String hostName, lastCheckInTimeMillis ->
+            cleanUpStaleServer( hostName )
+        }
+    }
 
-                def staleJobNames = redis.smembers(staleServerAcquiredJobsSetName)
-                def triggerFireTime = staleJobNames.collect{ [(it):redis.hget("$TRIGGER_PREFIX:$it", TriggerField.NextFireTime.name)] }.sum()
+    public void cleanUpStaleServer(String hostName) {
+        redisService.withRedis {Jedis redis ->
+            log.info "Cleaning up stale server $hostName"
+            def staleServerAcquiredJobsSetName = Trigger.getAcquiredIndexByHostName(hostName)
 
-                redis.watch(staleServerAcquiredJobsSetName)
+            def staleJobNames = redis.smembers(staleServerAcquiredJobsSetName)
+            def triggerFireTime = staleJobNames.collect{ [(it):redis.hget("$TRIGGER_PREFIX:$it", TriggerField.NextFireTime.name)] }.sum()
 
-                def transaction = redis.multi()
+            redis.watch(staleServerAcquiredJobsSetName)
 
-                staleJobNames.each{ jobName ->
-                    transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.State.name, TriggerState.Waiting.name)
-                    transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.AcquiredBy.name, "")
-                    transaction.zadd(Trigger.TRIGGER_NEXTFIRE_INDEX, triggerFireTime[jobName] as Long, jobName)
-                }
+            def transaction = redis.multi()
 
-                transaction.del(staleServerAcquiredJobsSetName)
-                transaction.hdel("$SCHEDULER_PREFIX:checkIn", hostName)
-                transaction.exec()
+            staleJobNames.each{ jobName ->
+                transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.State.name, TriggerState.Waiting.name)
+                transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.AcquiredBy.name, "")
+                transaction.zadd(Trigger.TRIGGER_NEXTFIRE_INDEX, triggerFireTime[jobName] as Long, jobName)
             }
+
+            transaction.del(staleServerAcquiredJobsSetName)
+            transaction.hdel("$SCHEDULER_PREFIX:checkIn", hostName)
+            transaction.exec()
         }
     }
 
