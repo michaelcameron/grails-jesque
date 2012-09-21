@@ -47,7 +47,7 @@ class JesqueSchedulerThreadService implements Runnable {
     }
 
     public void stop(Integer waitMilliseconds = IDLE_WAIT_TIME + 2000, Boolean interrupt = false) {
-        log.debug "Stopping the jesque scheduler thread"
+        log.info "Stopping the jesque scheduler thread"
         threadState.set(JesqueScheduleThreadState.Stopped)
         try{
             schedulerThread.join(waitMilliseconds)

@@ -122,8 +122,6 @@ class JesqueGrailsPlugin {
         if( jesqueConfigMap.schedulerThreadActive ) {
             log.info "Launching jesque scheduler thread"
             JesqueSchedulerThreadService jesqueSchedulerThreadService = applicationContext.jesqueSchedulerThreadService
-            log.info applicationContext.hashCode()
-            log.info jesqueSchedulerThreadService.hashCode()
             jesqueSchedulerThreadService.startSchedulerThread()
         }
 
