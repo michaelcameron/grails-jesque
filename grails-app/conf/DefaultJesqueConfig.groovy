@@ -3,6 +3,7 @@ grails{
         pruneWorkersOnStartup = true
         createWorkersOnStartup = true
         schedulerThreadActive = true
+        delayedJobThreadActive = true
     }
 }
 

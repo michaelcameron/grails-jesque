@@ -15,6 +15,7 @@ import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.springframework.context.ApplicationContext
 import grails.plugin.jesque.TriggersConfigBuilder
+import grails.plugin.jesque.JesqueDelayedJobThreadService
 
 class JesqueGrailsPlugin {
 
@@ -126,6 +127,11 @@ class JesqueGrailsPlugin {
             log.info "Launching jesque scheduler thread"
             JesqueSchedulerThreadService jesqueSchedulerThreadService = applicationContext.jesqueSchedulerThreadService
             jesqueSchedulerThreadService.startSchedulerThread()
+        }
+        if( jesqueConfigMap.delayedJobThreadActive ) {
+            log.info "Launching delayed job thread"
+            JesqueDelayedJobThreadService jesqueDelayedJobThreadService = applicationContext.jesqueDelayedJobThreadService
+            jesqueDelayedJobThreadService.startThread()
         }
 
         log.info "Starting jesque workers"

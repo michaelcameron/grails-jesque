@@ -120,6 +120,7 @@ Roadmap
 * Wrap above ability automatically with annotation and dynamically creating a method with the same name + "Async" suffix
 * Create grails/groovy docs (gdoc?) to extensively document options
 * Support job/config changes when running as `grails run-app
+* Dynamic wake time of delayed jobs thread to reduce polling
 
 Release Notes
 =============
@@ -133,6 +134,8 @@ Release Notes
     * Handle changes to scheduled jobs during development
     * Upgrade to Jedis 2.1.0 (Note, this is binary incompatible with Jedis 2.0.0, Grails Jesque < 0.4.0 will not run with Jedis 2.1.0 and >= 0.4.0 must run with Jedis >= 2.1.0)
     * Change artefact name from "Job" to "JesqueJob" to not clash with other grails plugins (e.g. quartz) that use an artefact name of "Job" (issue #14)
+* 0.5.0
+    * Add delayed job queue implementation
 
 License
 -------

@@ -10,6 +10,7 @@ import net.greghaines.jesque.meta.WorkerInfo
 import java.lang.reflect.Method
 import grails.plugin.jesque.annotation.Async
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.joda.time.DateTime
 
 class JesqueService {
 
@@ -21,6 +22,7 @@ class JesqueService {
     def grailsApplication
     def sessionFactory
     def jesqueConfig
+    def jesqueDelayedJobService
     Client jesqueClient
     WorkerInfoDAO workerInfoDao
     List<Worker> workers = Collections.synchronizedList([])
@@ -33,21 +35,64 @@ class JesqueService {
         jesqueClient.enqueue(queueName, job)
     }
 
+    void enqueue(String queueName, String jobName, List args) {
+        enqueue(queueName, new Job(jobName, args))
+    }
+
     void enqueue(String queueName, Class jobClazz, List args) {
         enqueue(queueName, jobClazz.simpleName, args)
     }
 
-    void enqueue(String queueName, String jobName, List args) {
-        jesqueClient.enqueue(queueName, new Job(jobName, args))
-    }
-
     void enqueue(String queueName, String jobName, Object... args) {
-        jesqueClient.enqueue(queueName, new Job(jobName, args))
+        enqueue(queueName, new Job(jobName, args))
     }
 
     void enqueue(String queueName, Class jobClazz, Object... args) {
         enqueue(queueName, jobClazz.simpleName, args)
     }
+
+
+    void enqueueAt(DateTime dateTime, String queueName, Job job) {
+        jesqueDelayedJobService.enqueueAt(dateTime, queueName, job)
+    }
+
+    void enqueueAt(DateTime dateTime, String queueName, String jobName, Object... args) {
+        enqueueAt( dateTime, queueName, new Job(jobName, args) )
+    }
+
+    void enqueueAt(DateTime dateTime, String queueName, Class jobClazz, Object... args) {
+        enqueueAt( dateTime, queueName, jobClazz.simpleName, args)
+    }
+
+    void enqueueAt(DateTime dateTime, String queueName, String jobName, List args) {
+        enqueueAt( dateTime, queueName, new Job(jobName, args) )
+    }
+
+    void enqueueAt(DateTime dateTime, String queueName, Class jobClazz, List args) {
+        enqueueAt( dateTime, queueName, jobClazz.simpleName, args )
+    }
+
+
+    void enqueueIn(Integer millisecondDelay, String queueName, Job job) {
+        enqueueAt( new DateTime().plusMillis(millisecondDelay), queueName, job )
+    }
+
+    void enqueueIn(Integer millisecondDelay, String queueName, String jobName, Object... args) {
+        enqueueIn( millisecondDelay, queueName, new Job(jobName, args) )
+    }
+
+    void enqueueIn(Integer millisecondDelay, String queueName, Class jobClazz, Object... args) {
+        enqueueIn( millisecondDelay, queueName, jobClazz.simpleName, args )
+    }
+
+    void enqueueIn(Integer millisecondDelay, String queueName, String jobName, List args) {
+        enqueueIn( millisecondDelay, queueName, new Job(jobName, args) )
+    }
+
+    void enqueueIn(Integer millisecondDelay, String queueName, Class jobClazz, List args) {
+        enqueueIn( millisecondDelay, queueName, jobClazz.simpleName, args )
+    }
+
 
     Worker startWorker(String queueName, String jobName, Class jobClass) {
         startWorker([queueName], [(jobName):jobClass])
