@@ -19,7 +19,7 @@ import grails.plugin.jesque.JesqueDelayedJobThreadService
 
 class JesqueGrailsPlugin {
 
-    def version = "0.5.0-SNAPSHOT"
+    def version = "0.5.0"
     def grailsVersion = "2.0.0 > *"
     def dependsOn = [redis: "1.3.2 > *"]
     def pluginExcludes = [
