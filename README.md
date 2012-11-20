@@ -136,6 +136,7 @@ Release Notes
     * Change artefact name from "Job" to "JesqueJob" to not clash with other grails plugins (e.g. quartz) that use an artefact name of "Job" (issue #14)
 * 0.5.0 - released 2012-11-20
     * Add delayed job queue implementation
+    * Ability to use grailsConfiguration in triggers closure
 
 License
 -------
