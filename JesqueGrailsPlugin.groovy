@@ -16,6 +16,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.springframework.context.ApplicationContext
 import grails.plugin.jesque.TriggersConfigBuilder
 import grails.plugin.jesque.JesqueDelayedJobThreadService
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 
 class JesqueGrailsPlugin {
 
@@ -54,41 +55,68 @@ class JesqueGrailsPlugin {
     def doWithWebDescriptor = { xml ->
     }
 
+    private boolean isJesqueEnabled(DefaultGrailsApplication application) {
+
+        def jesqueConfigMap = application.config.grails.jesque
+
+        boolean isJesqueEnabled = true // default to true
+
+        def enabled = jesqueConfigMap.enabled // load the value from the config file
+        if (enabled != null) {
+            // there is a value set in the config file
+
+            // use the value if it is a String or Boolean
+            if (enabled instanceof String) {
+                isJesqueEnabled = Boolean.parseBoolean(enabled)
+            }
+            else if (enabled instanceof Boolean) {
+                isJesqueEnabled = (Boolean)enabled
+            }
+        }
+        return isJesqueEnabled
+    }
+
     def doWithSpring = {
         log.info "Merging in default jesque config"
         loadJesqueConfig(application.config.grails.jesque)
 
-        log.info "Creating jesque core beans"
-        def redisConfigMap = application.config.grails.redis
-        def jesqueConfigMap = application.config.grails.jesque
+        if (isJesqueEnabled(application)) {
 
-        def jesqueConfigBuilder = new ConfigBuilder()
-        if(jesqueConfigMap.namespace)
-            jesqueConfigBuilder = jesqueConfigBuilder.withNamespace(jesqueConfigMap.namespace)
-        if(redisConfigMap.host)
-            jesqueConfigBuilder = jesqueConfigBuilder.withHost(redisConfigMap.host)
-        if(redisConfigMap.port)
-            jesqueConfigBuilder = jesqueConfigBuilder.withPort(redisConfigMap.port as Integer)
-        if(redisConfigMap.timeout)
-            jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout as Integer)
-        if(redisConfigMap.password)
-            jesqueConfigBuilder = jesqueConfigBuilder.withPassword(redisConfigMap.password)
+            log.info "Creating jesque core beans"
+            def redisConfigMap = application.config.grails.redis
+            def jesqueConfigMap = application.config.grails.jesque
 
-        def jesqueConfigInstance = jesqueConfigBuilder.build()
+            def jesqueConfigBuilder = new ConfigBuilder()
+            if(jesqueConfigMap.namespace)
+                jesqueConfigBuilder = jesqueConfigBuilder.withNamespace(jesqueConfigMap.namespace)
+            if(redisConfigMap.host)
+                jesqueConfigBuilder = jesqueConfigBuilder.withHost(redisConfigMap.host)
+            if(redisConfigMap.port)
+                jesqueConfigBuilder = jesqueConfigBuilder.withPort(redisConfigMap.port as Integer)
+            if(redisConfigMap.timeout)
+                jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout as Integer)
+            if(redisConfigMap.password)
+                jesqueConfigBuilder = jesqueConfigBuilder.withPassword(redisConfigMap.password)
 
-        jesqueConfig(Config, jesqueConfigInstance.host, jesqueConfigInstance.port, jesqueConfigInstance.timeout,
-                     jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database)
-        jesqueClient(ClientPoolImpl, jesqueConfigInstance, ref('redisPool'))
+            def jesqueConfigInstance = jesqueConfigBuilder.build()
 
-        failureDao(FailureDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
-        keysDao(KeysDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
-        queueInfoDao(QueueInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
-        workerInfoDao(WorkerInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+            jesqueConfig(Config, jesqueConfigInstance.host, jesqueConfigInstance.port, jesqueConfigInstance.timeout,
+                         jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database)
+            jesqueClient(ClientPoolImpl, jesqueConfigInstance, ref('redisPool'))
 
-        log.info "Creating jesque job beans"
-        application.jesqueJobClasses.each {jobClass ->
-            configureJobBeans.delegate = delegate
-            configureJobBeans(jobClass)
+            failureDao(FailureDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+            keysDao(KeysDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+            queueInfoDao(QueueInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+            workerInfoDao(WorkerInfoDAORedisImpl, ref('jesqueConfig'), ref('redisPool'))
+
+            log.info "Creating jesque job beans"
+            application.jesqueJobClasses.each {jobClass ->
+                configureJobBeans.delegate = delegate
+                configureJobBeans(jobClass)
+            }
+        }
+        else {
+            log.info "Jesque disabled"
         }
     }
 
@@ -112,74 +140,78 @@ class JesqueGrailsPlugin {
     }
 
     def doWithApplicationContext = { GrailsApplicationContext applicationContext ->
-        TriggersConfigBuilder.metaClass.getGrailsApplication = { -> application }
+        if (isJesqueEnabled(application)) {
+            TriggersConfigBuilder.metaClass.getGrailsApplication = { -> application }
 
-        JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
+            JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
 
-        log.info "Scheduling Jesque Jobs"
-        application.jesqueJobClasses.each{ GrailsJesqueJobClass jobClass ->
-            jesqueConfigurationService.scheduleJob(jobClass)
+            log.info "Scheduling Jesque Jobs"
+            application.jesqueJobClasses.each{ GrailsJesqueJobClass jobClass ->
+                jesqueConfigurationService.scheduleJob(jobClass)
+            }
+
+            def jesqueConfigMap = application.config.grails.jesque
+
+            if( jesqueConfigMap.schedulerThreadActive ) {
+                log.info "Launching jesque scheduler thread"
+                JesqueSchedulerThreadService jesqueSchedulerThreadService = applicationContext.jesqueSchedulerThreadService
+                jesqueSchedulerThreadService.startSchedulerThread()
+            }
+            if( jesqueConfigMap.delayedJobThreadActive ) {
+                log.info "Launching delayed job thread"
+                JesqueDelayedJobThreadService jesqueDelayedJobThreadService = applicationContext.jesqueDelayedJobThreadService
+                jesqueDelayedJobThreadService.startThread()
+            }
+
+            log.info "Starting jesque workers"
+            JesqueService jesqueService = applicationContext.jesqueService
+
+            jesqueConfigurationService.validateConfig(jesqueConfigMap)
+
+            log.info "Found ${jesqueConfigMap.size()} workers"
+            if(jesqueConfigMap.pruneWorkersOnStartup) {
+                log.info "Pruning workers"
+                jesqueService.pruneWorkers()
+            }
+
+            jesqueConfigurationService.mergeClassConfigurationIntoConfigMap(jesqueConfigMap)
+            if(jesqueConfigMap.createWorkersOnStartup) {
+                log.info "Creating workers"
+                jesqueService.startWorkersFromConfig(jesqueConfigMap)
+            }
+
+            applicationContext
         }
-
-        def jesqueConfigMap = application.config.grails.jesque
-
-        if( jesqueConfigMap.schedulerThreadActive ) {
-            log.info "Launching jesque scheduler thread"
-            JesqueSchedulerThreadService jesqueSchedulerThreadService = applicationContext.jesqueSchedulerThreadService
-            jesqueSchedulerThreadService.startSchedulerThread()
-        }
-        if( jesqueConfigMap.delayedJobThreadActive ) {
-            log.info "Launching delayed job thread"
-            JesqueDelayedJobThreadService jesqueDelayedJobThreadService = applicationContext.jesqueDelayedJobThreadService
-            jesqueDelayedJobThreadService.startThread()
-        }
-
-        log.info "Starting jesque workers"
-        JesqueService jesqueService = applicationContext.jesqueService
-
-        jesqueConfigurationService.validateConfig(jesqueConfigMap)
-
-        log.info "Found ${jesqueConfigMap.size()} workers"
-        if(jesqueConfigMap.pruneWorkersOnStartup) {
-            log.info "Pruning workers"
-            jesqueService.pruneWorkers()
-        }
-
-        jesqueConfigurationService.mergeClassConfigurationIntoConfigMap(jesqueConfigMap)
-        if(jesqueConfigMap.createWorkersOnStartup) {
-            log.info "Creating workers"
-            jesqueService.startWorkersFromConfig(jesqueConfigMap)
-        }
-
-        applicationContext
     }
 
     def onChange = {event ->
-        Class source = event.source
-        if(!application.isArtefactOfType(JesqueJobArtefactHandler.TYPE, source)) {
-            return
-        }
-
-        log.debug("Job ${source} changed. Reloading...")
-
-        ApplicationContext context = event.ctx
-        JesqueConfigurationService jesqueConfigurationService = context?.jesqueConfigurationService
-
-        if(context && jesqueConfigurationService) {
-            GrailsJesqueJobClass jobClass = application.getJobClass(source.name)
-            if(jobClass)
-                jesqueConfigurationService.deleteScheduleJob(jobClass)
-
-            jobClass = (GrailsJesqueJobClass)application.addArtefact(JesqueJobArtefactHandler.TYPE, source)
-
-            beans {
-                configureJobBeans.delegate = delegate
-                configureJobBeans(jobClass)
+        if (isJesqueEnabled(application)) {
+            Class source = event.source
+            if(!application.isArtefactOfType(JesqueJobArtefactHandler.TYPE, source)) {
+                return
             }
 
-            jesqueConfigurationService.scheduleJob(jobClass)
-        } else {
-            log.error("Application context or Jesque Scheduler not found. Can't reload Jesque plugin.")
+            log.debug("Job ${source} changed. Reloading...")
+
+            ApplicationContext context = event.ctx
+            JesqueConfigurationService jesqueConfigurationService = context?.jesqueConfigurationService
+
+            if(context && jesqueConfigurationService) {
+                GrailsJesqueJobClass jobClass = application.getJobClass(source.name)
+                if(jobClass)
+                    jesqueConfigurationService.deleteScheduleJob(jobClass)
+
+                jobClass = (GrailsJesqueJobClass)application.addArtefact(JesqueJobArtefactHandler.TYPE, source)
+
+                beans {
+                    configureJobBeans.delegate = delegate
+                    configureJobBeans(jobClass)
+                }
+
+                jesqueConfigurationService.scheduleJob(jobClass)
+            } else {
+                log.error("Application context or Jesque Scheduler not found. Can't reload Jesque plugin.")
+            }
         }
     }
 
