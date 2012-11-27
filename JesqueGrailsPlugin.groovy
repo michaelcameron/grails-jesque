@@ -16,6 +16,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.springframework.context.ApplicationContext
 import grails.plugin.jesque.TriggersConfigBuilder
 import grails.plugin.jesque.JesqueDelayedJobThreadService
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class JesqueGrailsPlugin {
 
@@ -57,6 +58,11 @@ class JesqueGrailsPlugin {
     def doWithSpring = {
         log.info "Merging in default jesque config"
         loadJesqueConfig(application.config.grails.jesque)
+
+        if(!isJesqueEnabled(application)) {
+            log.info "Jesque Disabled"
+            return
+        }
 
         log.info "Creating jesque core beans"
         def redisConfigMap = application.config.grails.redis
@@ -112,6 +118,9 @@ class JesqueGrailsPlugin {
     }
 
     def doWithApplicationContext = { GrailsApplicationContext applicationContext ->
+        if(!isJesqueEnabled(application))
+            return
+
         TriggersConfigBuilder.metaClass.getGrailsApplication = { -> application }
 
         JesqueConfigurationService jesqueConfigurationService = applicationContext.jesqueConfigurationService
@@ -155,6 +164,9 @@ class JesqueGrailsPlugin {
     }
 
     def onChange = {event ->
+        if(!isJesqueEnabled(application))
+            return
+
         Class source = event.source
         if(!application.isArtefactOfType(JesqueJobArtefactHandler.TYPE, source)) {
             return
@@ -199,5 +211,22 @@ class JesqueGrailsPlugin {
         jesqueConfig.merge( mergedConfig )
 
         return jesqueConfig
+    }
+
+    private Boolean isJesqueEnabled(GrailsApplication application) {
+        def jesqueConfigMap = application.config.grails.jesque
+
+        Boolean isJesqueEnabled = true
+
+        def enabled = jesqueConfigMap.enabled
+        if (enabled != null) {
+            if (enabled instanceof String) {
+                isJesqueEnabled = Boolean.parseBoolean(enabled)
+            } else if (enabled instanceof Boolean) {
+                isJesqueEnabled = enabled
+            }
+        }
+
+        return isJesqueEnabled
     }
 }

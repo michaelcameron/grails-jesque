@@ -1,5 +1,6 @@
 grails{
     jesque {
+        enabled = true
         pruneWorkersOnStartup = true
         createWorkersOnStartup = true
         schedulerThreadActive = true
