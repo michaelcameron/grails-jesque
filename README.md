@@ -74,7 +74,7 @@ The redis pool used is configured in the [redis](https://github.com/grails-plugi
 grails {
     redis {
         host = localhost //default
-        prot = 6379 //default
+        port = 6379 //default
     }
 }
 ```
