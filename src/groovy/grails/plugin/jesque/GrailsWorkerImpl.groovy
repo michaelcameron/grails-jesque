@@ -10,9 +10,14 @@ import net.greghaines.jesque.Config
 import net.greghaines.jesque.Job
 import net.greghaines.jesque.worker.UnpermittedJobException
 import net.greghaines.jesque.worker.WorkerImpl
+import net.greghaines.jesque.worker.WorkerRecoveryStrategy
+
+import static net.greghaines.jesque.worker.WorkerEvent.WORKER_ERROR
+import redis.clients.jedis.exceptions.JedisConnectionException
 
 class GrailsWorkerImpl extends WorkerImpl {
 
+    private Log
     BeanBuilder beanBuilder
     GrailsApplication grailsApplication
 
@@ -56,9 +61,9 @@ class GrailsWorkerImpl extends WorkerImpl {
                 throw new UnpermittedJobException(job.className)
             }
             def instance = createInstance(jobClass.canonicalName)
-            execute(job, curQueue, instance, job.args);
+            execute(job, curQueue, instance, job.args)
         } catch (Exception e) {
-            failure(e, job, curQueue);
+            failure(e, job, curQueue)
         }
     }
 
@@ -67,14 +72,59 @@ class GrailsWorkerImpl extends WorkerImpl {
     }
 
     protected void execute(final Job job, final String curQueue, final Object instance, final Object[] args) {
-        this.jedis.set(key(WORKER, this.name), statusMsg(curQueue, job));
+        this.jedis.set(key(WORKER, this.name), statusMsg(curQueue, job))
         try {
             final Object result
-            this.listenerDelegate.fireEvent(JOB_EXECUTE, this, curQueue, job, instance, null, null);
+            this.listenerDelegate.fireEvent(JOB_EXECUTE, this, curQueue, job, instance, null, null)
             result = instance.perform(* args)
-            success(job, instance, result, curQueue);
+            success(job, instance, result, curQueue)
         } finally {
-            this.jedis.del(key(WORKER, this.name));
+            this.jedis.del(key(WORKER, this.name))
+        }
+    }
+
+    protected void recoverFromException(final String curQueue, final Exception e) {
+        final WorkerRecoveryStrategy recoveryStrategy = this.exceptionHandlerRef.get().onException(this, e, curQueue)
+        final int reconnectAttempts = getReconnectAttempts()
+        switch (recoveryStrategy)
+        {
+            case WorkerRecoveryStrategy.RECONNECT:
+                def attempt = 0
+
+                while(attempt++ <= reconnectAttempts && !this.jedis.isConnected()) {
+                    log.info("Reconnecting to Redis in response to exception - Attempt $attempt of $reconnectAttempts", e)
+                    try
+                    {
+                        this.jedis.disconnect()
+                        try { Thread.sleep(reconnectSleepTime) } catch (Exception ignore){}
+                        this.jedis.connect()
+                        def pingResult = this.jedis.ping()
+                        if( pingResult != "PONG" )
+                            log.info("Unexpected redis ping result, $pingResult")
+                    } catch (JedisConnectionException ignore) {
+                        // Ignore bad connection attempts
+                    } catch (Exception exception) {
+                        log.error("Recived exception when trying to reconnect to Redis", exception)
+                        throw exception
+                    }
+                }
+                if (!this.jedis.isConnected()) {
+                    log.error("Terminating in response to exception after $reconnectAttempts to reconnect", e)
+                    end(false)
+                } else {
+                    log.info("Reconnected to Redis after $attempt attempts")
+                }
+                break
+            case WorkerRecoveryStrategy.TERMINATE:
+                log.error("Terminating in response to exception", e)
+                end(false)
+                break
+            case WorkerRecoveryStrategy.PROCEED:
+                this.listenerDelegate.fireEvent(WORKER_ERROR, this, curQueue, null, null, null, e)
+                break
+            default:
+                log.error("Unknown WorkerRecoveryStrategy: $recoveryStrategy while attempting to recover from the following exception; worker proceeding...", e)
+                break
         }
     }
 }
