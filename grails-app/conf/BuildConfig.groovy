@@ -20,6 +20,7 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.codehaus.org"
         mavenRepo "http://download.java.net/maven/2/"
         mavenRepo "http://repository.jboss.com/maven2/"
+        mavenRepo "https://oss.sonatype.org/content/repositories/snapshots/"
     }
     dependencies {
         compile('commons-pool:commons-pool:1.6') {
@@ -35,14 +36,17 @@ grails.project.dependency.resolution = {
             excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
             export = false
         }
+
+        test "org.gebish:geb-spock:0.9.0-SNAPSHOT"
+        test "org.spockframework:spock-grails-support:0.7-groovy-2.0"
     }
     plugins {
         compile(':redis:1.3.2')
         compile(':release:2.0.4', ':rest-client-builder:1.0.2') {
             export = false
         }
-        test(":spock:0.6") {
-            export = false
+        test(':spock:0.7') {
+            exclude "spock-grails-support"
         }
         test(":hibernate:$grailsVersion") {
             export = false

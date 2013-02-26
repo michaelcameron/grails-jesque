@@ -5,7 +5,7 @@ import grails.plugin.spock.UnitSpec
 import java.text.ParseException
 
 class CronExpressionSpec extends UnitSpec {
-    void "test isSatsifiedBy"() {
+    void "test isSatisfiedBy"() {
         given:
         def cronExpression = new CronExpression("0 15 10 * * ? 2005")
 
@@ -47,8 +47,8 @@ class CronExpressionSpec extends UnitSpec {
         cronExpression.isSatisfiedBy(new DateTime(2010, 10, 29, 10, 15, 0))
     }
 
-    void "test serilization and deserialization"() {
-        given:
+    void "test serialization and deserialization"() {
+        when:
         CronExpression cronExpression = new CronExpression("19 15 10 4 Apr ? ");
 
         def baos = new ByteArrayOutputStream()
@@ -61,10 +61,10 @@ class CronExpressionSpec extends UnitSpec {
         }
         CronExpression newExpression = (CronExpression)ois.readObject()
 
-        expect:
+        then:
+        noExceptionThrown()
         newExpression.cronExpression == cronExpression.cronExpression
         newExpression.getNextValidTimeAfter(new Date()) != null
-        noExceptionThrown()
     }
 
     void "test invalid months"() {
