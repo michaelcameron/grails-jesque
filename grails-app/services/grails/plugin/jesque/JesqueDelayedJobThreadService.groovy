@@ -1,10 +1,11 @@
 package grails.plugin.jesque
 
+import org.springframework.beans.factory.DisposableBean
+
 import java.util.concurrent.atomic.AtomicReference
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.joda.time.DateTime
 
-class JesqueDelayedJobThreadService implements Runnable {
+class JesqueDelayedJobThreadService implements Runnable, DisposableBean {
     static transactional = true
     static scope = 'singleton'
 
@@ -20,10 +21,6 @@ class JesqueDelayedJobThreadService implements Runnable {
 
     def jesqueDelayedJobService
     def grailsApplication
-
-    JesqueDelayedJobThreadService() {
-        ShutdownOperations.addOperation({ this.stop() })
-    }
 
     void startThread() {
         delayedJobThread = new Thread(this, "Jesque Delayed Job Thread")
@@ -90,5 +87,9 @@ class JesqueDelayedJobThreadService implements Runnable {
                 }
             }
         }
+    }
+
+    void destroy()  {
+        this.stop()
     }
 }

@@ -2,17 +2,14 @@ package grails.plugin.jesque
 
 import net.greghaines.jesque.client.Client
 import net.greghaines.jesque.Job
-
 import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.worker.WorkerEvent
 import net.greghaines.jesque.meta.dao.WorkerInfoDAO
 import net.greghaines.jesque.meta.WorkerInfo
-import java.lang.reflect.Method
-import grails.plugin.jesque.annotation.Async
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.springframework.beans.factory.DisposableBean
 import org.joda.time.DateTime
 
-class JesqueService {
+class JesqueService implements DisposableBean {
 
     static transactional = false
     static scope = 'singleton'
@@ -26,10 +23,6 @@ class JesqueService {
     Client jesqueClient
     WorkerInfoDAO workerInfoDao
     List<Worker> workers = Collections.synchronizedList([])
-
-    JesqueService() {
-        ShutdownOperations.addOperation({ this.stopAllWorkers() })
-    }
 
     void enqueue(String queueName, Job job) {
         jesqueClient.enqueue(queueName, job)
@@ -172,5 +165,9 @@ class JesqueService {
     public void removeWorkerFromLifecycleTracking(Worker worker) {
         log.debug "Removing worker ${worker.name} from lifecycle tracking"
         workers.remove(worker)
+    }
+
+    void destroy() throws Exception {
+        this.stopAllWorkers()
     }
 }
