@@ -127,9 +127,9 @@ Release Notes
 
 * 0.2.0 - released 2011-10-17
     * First publicly announced version
-* 0.3.0 - released 2011-02-03
+* 0.3.0 - released 2012-02-03
     * First implementation of scheduler
-* 0.4.0 - released 2012-6-6
+* 0.4.0 - released 2012-06-06
     * Gracefully shutdown threads
     * Handle changes to scheduled jobs during development
     * Upgrade to Jedis 2.1.0 (Note, this is binary incompatible with Jedis 2.0.0, Grails Jesque < 0.4.0 will not run with Jedis 2.1.0 and >= 0.4.0 must run with Jedis >= 2.1.0)
@@ -137,6 +137,13 @@ Release Notes
 * 0.5.0 - released 2012-11-20
     * Add delayed job queue implementation
     * Ability to use grailsConfiguration in triggers closure
+* 0.5.1 - released 2012-11-27
+    * Add some logging to the exception handler to track down shutdown issues
+    * Add ability to prevent jesque from starting via config ([issue #22](https://github.com/michaelcameron/grails-jesque/issues/23))
+* 0.6.0 - released TBD
+    * Upgrade to Jesque 1.3.1
+    * Fix edge case with errors after calling jedis.multi() but before calling trans.exec() ([issue #26](https://github.com/michaelcameron/grails-jesque/issues/26))
+    * Ability to set an exception handler for configured workers
 
 License
 -------
