@@ -27,7 +27,7 @@ grails.project.dependency.resolution = {
             transitive = false
         }
 
-        compile('net.greghaines:jesque:1.2.0')
+        compile('net.greghaines:jesque:1.3.1')
         compile('redis.clients:jedis:2.1.0')
 
         compile('joda-time:joda-time:2.1')

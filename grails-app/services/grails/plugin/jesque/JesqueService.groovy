@@ -2,6 +2,7 @@ package grails.plugin.jesque
 
 import net.greghaines.jesque.client.Client
 import net.greghaines.jesque.Job
+import net.greghaines.jesque.worker.ExceptionHandler
 import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.worker.WorkerEvent
 import net.greghaines.jesque.meta.dao.WorkerInfoDAO
@@ -87,21 +88,23 @@ class JesqueService implements DisposableBean {
     }
 
 
-    Worker startWorker(String queueName, String jobName, Class jobClass) {
-        startWorker([queueName], [(jobName):jobClass])
+    Worker startWorker(String queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null) {
+        startWorker([queueName], [(jobName):jobClass], exceptionHandler)
     }
 
-    Worker startWorker(List queueName, String jobName, Class jobClass) {
-        startWorker(queueName, [(jobName):jobClass])
+    Worker startWorker(List queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null) {
+        startWorker(queueName, [(jobName):jobClass], exceptionHandler)
     }
 
-    Worker startWorker(String queueName, Map<String, Class> jobTypes) {
-        startWorker([queueName], jobTypes)
+    Worker startWorker(String queueName, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null) {
+        startWorker([queueName], jobTypes, exceptionHandler)
     }
 
-    Worker startWorker(List<String> queues, Map<String, Class> jobTypes) {
+    Worker startWorker(List<String> queues, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null) {
         log.debug "Starting worker processing queueus: ${queues}"
         def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes)
+        if( exceptionHandler )
+            worker.exceptionHandler = exceptionHandler
         workers.add(worker)
 
         def workerHibernateListener = new WorkerHibernateListener(sessionFactory)
@@ -147,7 +150,7 @@ class JesqueService implements DisposableBean {
             def workers = value.workers ? value.workers.toInteger() : DEFAULT_WORKER_POOL_SIZE
 
             workers.times {
-                startWorker(value.queueNames, value.jobTypes)
+                startWorker(value.queueNames, value.jobTypes, value.exceptionHandler)
             }
         }
     }
