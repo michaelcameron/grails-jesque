@@ -121,6 +121,7 @@ Roadmap
 * Create grails/groovy docs (gdoc?) to extensively document options
 * Support job/config changes when running as `grails run-app
 * Dynamic wake time of delayed jobs thread to reduce polling
+* Ability to set an exception handler for configured workers
 
 Release Notes
 =============
@@ -140,10 +141,9 @@ Release Notes
 * 0.5.1 - released 2012-11-27
     * Add some logging to the exception handler to track down shutdown issues
     * Add ability to prevent jesque from starting via config ([issue #22](https://github.com/michaelcameron/grails-jesque/issues/23))
-* 0.6.0 - released TBD
+* 0.6.0 - released 2013-03-05
     * Upgrade to Jesque 1.3.1
     * Fix edge case with errors after calling jedis.multi() but before calling trans.exec() ([issue #26](https://github.com/michaelcameron/grails-jesque/issues/26))
-    * Ability to set an exception handler for configured workers
 
 License
 -------
