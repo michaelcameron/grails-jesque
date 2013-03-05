@@ -144,13 +144,19 @@ class JesqueService implements DisposableBean {
     }
 
     void startWorkersFromConfig(ConfigObject jesqueConfigMap) {
-        jesqueConfigMap.workers.each{ key, value ->
-            log.info "Starting workers for pool $key"
+        jesqueConfigMap.workers.each{ String workerPoolName, value ->
+            log.info "Starting workers for pool $workerPoolName"
 
             def workers = value.workers ? value.workers.toInteger() : DEFAULT_WORKER_POOL_SIZE
 
+            if( !((value.queueNames instanceof String) || (value.queueNames instanceof List<String>)))
+                throw new Exception("Invalid queueNames for pool $workerPoolName, expecting must be a String or a List<String>.")
+
+            if( !(value.jobTypes instanceof Map) )
+                throw new Exception("Invalid jobTypes (${value.jobTypes}) for pool $workerPoolName, must be a map")
+
             workers.times {
-                startWorker(value.queueNames, value.jobTypes, value.exceptionHandler)
+                startWorker(value.queueNames, value.jobTypes)
             }
         }
     }
