@@ -7,16 +7,16 @@ class JesqueConfigurationService {
     def jesqueSchedulerService
 
     Boolean validateConfig(ConfigObject jesqueConfigMap) {
-        jesqueConfigMap.workers.each{ workerPoolName, value ->
+        jesqueConfigMap.workers.each{ String workerPoolName, ConfigObject value ->
             if( value.workers && !(value.workers instanceof Integer)  )
-                throw new Exception("Invalid worker count ${value.workers} for pool $workerPoolName")
+                throw new Exception("Invalid worker count ${value.workers} for pool $workerPoolName, expecting Integer")
 
             def queueNames = value.queueNames
-            if( !((queueNames instanceof String) || (queueNames instanceof List<String>)) )
+            if( queueNames && !((queueNames instanceof String) || (queueNames instanceof List<String>)) )
                 throw new Exception("Invalid queueNames ($queueNames) for pool $workerPoolName, must be a String or a List<String>")
 
             def jobTypes = value.jobTypes
-            if( !(jobTypes instanceof Map) )
+            if( jobTypes && !(jobTypes instanceof Map) )
                 throw new Exception("Invalid jobTypes ($jobTypes) for pool $workerPoolName, must be a map")
 
             jobTypes.each{ jobName, jobClass ->
@@ -51,10 +51,10 @@ class JesqueConfigurationService {
             }
 
             def workerPoolConfig = jesqueConfigMap.workers."${jobArtefact.workerPool}"
-            if( !workerPoolConfig ) {
+            if( !workerPoolConfig.queueNames )
                 workerPoolConfig.queueNames = []
+            if( !workerPoolConfig.jobTypes )
                 workerPoolConfig.jobTypes = [:]
-            }
 
             if( workerPoolConfig.queueNames instanceof String )
                 workerPoolConfig.queueNames = [workerPoolConfig.queueNames]

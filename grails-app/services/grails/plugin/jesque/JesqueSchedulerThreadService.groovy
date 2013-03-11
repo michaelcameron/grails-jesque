@@ -1,10 +1,11 @@
 package grails.plugin.jesque
 
 import org.joda.time.DateTime
-import java.util.concurrent.atomic.AtomicReference
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.springframework.beans.factory.DisposableBean
 
-class JesqueSchedulerThreadService implements Runnable {
+import java.util.concurrent.atomic.AtomicReference
+
+class JesqueSchedulerThreadService implements Runnable, DisposableBean {
 
     static transactional = true
     static scope = 'singleton'
@@ -19,10 +20,6 @@ class JesqueSchedulerThreadService implements Runnable {
     protected static Random random = new Random()
 
     def jesqueSchedulerService
-
-    JesqueSchedulerThreadService() {
-        ShutdownOperations.addOperation({ this.stop() })
-    }
 
     void startSchedulerThread() {
         schedulerThread = new Thread(this, "Jesque Scheduler Thread")
@@ -98,5 +95,9 @@ class JesqueSchedulerThreadService implements Runnable {
                 }
             }
         }
+    }
+
+    void destroy() throws Exception {
+        this.stop()
     }
 }

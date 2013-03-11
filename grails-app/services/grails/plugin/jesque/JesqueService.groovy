@@ -2,17 +2,15 @@ package grails.plugin.jesque
 
 import net.greghaines.jesque.client.Client
 import net.greghaines.jesque.Job
-
+import net.greghaines.jesque.worker.ExceptionHandler
 import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.worker.WorkerEvent
 import net.greghaines.jesque.meta.dao.WorkerInfoDAO
 import net.greghaines.jesque.meta.WorkerInfo
-import java.lang.reflect.Method
-import grails.plugin.jesque.annotation.Async
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.springframework.beans.factory.DisposableBean
 import org.joda.time.DateTime
 
-class JesqueService {
+class JesqueService implements DisposableBean {
 
     static transactional = false
     static scope = 'singleton'
@@ -26,10 +24,6 @@ class JesqueService {
     Client jesqueClient
     WorkerInfoDAO workerInfoDao
     List<Worker> workers = Collections.synchronizedList([])
-
-    JesqueService() {
-        ShutdownOperations.addOperation({ this.stopAllWorkers() })
-    }
 
     void enqueue(String queueName, Job job) {
         jesqueClient.enqueue(queueName, job)
@@ -94,21 +88,23 @@ class JesqueService {
     }
 
 
-    Worker startWorker(String queueName, String jobName, Class jobClass) {
-        startWorker([queueName], [(jobName):jobClass])
+    Worker startWorker(String queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null) {
+        startWorker([queueName], [(jobName):jobClass], exceptionHandler)
     }
 
-    Worker startWorker(List queueName, String jobName, Class jobClass) {
-        startWorker(queueName, [(jobName):jobClass])
+    Worker startWorker(List queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null) {
+        startWorker(queueName, [(jobName):jobClass], exceptionHandler)
     }
 
-    Worker startWorker(String queueName, Map<String, Class> jobTypes) {
-        startWorker([queueName], jobTypes)
+    Worker startWorker(String queueName, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null) {
+        startWorker([queueName], jobTypes, exceptionHandler)
     }
 
-    Worker startWorker(List<String> queues, Map<String, Class> jobTypes) {
+    Worker startWorker(List<String> queues, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null) {
         log.debug "Starting worker processing queueus: ${queues}"
         def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes)
+        if( exceptionHandler )
+            worker.exceptionHandler = exceptionHandler
         workers.add(worker)
 
         def workerHibernateListener = new WorkerHibernateListener(sessionFactory)
@@ -148,10 +144,16 @@ class JesqueService {
     }
 
     void startWorkersFromConfig(ConfigObject jesqueConfigMap) {
-        jesqueConfigMap.workers.each{ key, value ->
-            log.info "Starting workers for pool $key"
+        jesqueConfigMap.workers.each{ String workerPoolName, value ->
+            log.info "Starting workers for pool $workerPoolName"
 
             def workers = value.workers ? value.workers.toInteger() : DEFAULT_WORKER_POOL_SIZE
+
+            if( !((value.queueNames instanceof String) || (value.queueNames instanceof List<String>)))
+                throw new Exception("Invalid queueNames for pool $workerPoolName, expecting must be a String or a List<String>.")
+
+            if( !(value.jobTypes instanceof Map) )
+                throw new Exception("Invalid jobTypes (${value.jobTypes}) for pool $workerPoolName, must be a map")
 
             workers.times {
                 startWorker(value.queueNames, value.jobTypes)
@@ -172,5 +174,9 @@ class JesqueService {
     public void removeWorkerFromLifecycleTracking(Worker worker) {
         log.debug "Removing worker ${worker.name} from lifecycle tracking"
         workers.remove(worker)
+    }
+
+    void destroy() throws Exception {
+        this.stopAllWorkers()
     }
 }

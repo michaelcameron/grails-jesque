@@ -1,18 +1,14 @@
 package grails.plugin.jesque
 
 import redis.clients.jedis.Jedis
-import grails.converters.JSON
 import redis.clients.jedis.Transaction
-
 import redis.clients.jedis.Tuple
 import org.joda.time.DateTime
 import net.greghaines.jesque.Job
 import net.greghaines.jesque.json.ObjectMapperFactory
 import org.joda.time.Seconds
-import org.springframework.scheduling.annotation.Scheduled
 import org.joda.time.DateTimeZone
 
-//TODO: failure between multi and exec may lead to redis connection to be put back into pool still in multi
 class JesqueSchedulerService {
     static transactional = false
 
@@ -121,14 +117,21 @@ class JesqueSchedulerService {
                     return acquiredJobs
                 }
 
-                Transaction transaction = redis.multi()
                 trigger.state = TriggerState.Acquired
                 trigger.acquiredBy = hostName
-                transaction.hmset(trigger.redisKey, trigger.toRedisHash())
-                transaction.zrem(Trigger.TRIGGER_NEXTFIRE_INDEX, jobName)
-                transaction.sadd(Trigger.getAcquiredIndexByHostName(hostName), jobName)
+                Transaction transaction = redis.multi()
+                def transactionResult = null
+                try{
+                    transaction.hmset(trigger.redisKey, trigger.toRedisHash())
+                    transaction.zrem(Trigger.TRIGGER_NEXTFIRE_INDEX, jobName)
+                    transaction.sadd(Trigger.getAcquiredIndexByHostName(hostName), jobName)
 
-                def transactionResult = transaction.exec()
+                    transactionResult = transaction.exec()
+                } catch (Exception exception) {
+                    log.error "Exception setting trigger state, discarding transaction", exception
+                    transaction.discard()
+                }
+
                 if( transactionResult != null )
                     acquiredJobs << jobData
                 else
@@ -167,12 +170,17 @@ class JesqueSchedulerService {
         String jobJson = ObjectMapperFactory.get().writeValueAsString(job)
 
         def transaction = redis.multi()
-        transaction.sadd(RESQUE_QUEUES_INDEX, scheduledJob.jesqueJobQueue)
-        transaction.rpush(getRedisKeyForQueueName(scheduledJob.jesqueJobQueue), jobJson)
-        transaction.hmset(trigger.redisKey, trigger.toRedisHash())
-        transaction.zadd(Trigger.TRIGGER_NEXTFIRE_INDEX, trigger.nextFireTime.millis, jobName)
-        if( transaction.exec() == null )
-            log.warn "Job exection aborted for $jobName because the trigger data changed"
+        try{
+            transaction.sadd(RESQUE_QUEUES_INDEX, scheduledJob.jesqueJobQueue)
+            transaction.rpush(getRedisKeyForQueueName(scheduledJob.jesqueJobQueue), jobJson)
+            transaction.hmset(trigger.redisKey, trigger.toRedisHash())
+            transaction.zadd(Trigger.TRIGGER_NEXTFIRE_INDEX, trigger.nextFireTime.millis, jobName)
+            if( transaction.exec() == null )
+                log.warn "Job exection aborted for $jobName because the trigger data changed"
+        } catch(Exception exception) {
+            log.error "Exception enqueuing job, discarding transaction", exception
+            transaction.discard()
+        }
 
         //always remove index regardless of the result of the enqueue
         redis.srem(Trigger.getAcquiredIndexByHostName(hostName), jobName)
@@ -211,15 +219,20 @@ class JesqueSchedulerService {
 
             def transaction = redis.multi()
 
-            staleJobNames.each{ jobName ->
-                transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.State.name, TriggerState.Waiting.name)
-                transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.AcquiredBy.name, "")
-                transaction.zadd(Trigger.TRIGGER_NEXTFIRE_INDEX, triggerFireTime[jobName] as Long, jobName)
-            }
+            try{
+                staleJobNames.each{ jobName ->
+                    transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.State.name, TriggerState.Waiting.name)
+                    transaction.hset("$TRIGGER_PREFIX:$jobName", TriggerField.AcquiredBy.name, "")
+                    transaction.zadd(Trigger.TRIGGER_NEXTFIRE_INDEX, triggerFireTime[jobName] as Long, jobName)
+                }
 
-            transaction.del(staleServerAcquiredJobsSetName)
-            transaction.hdel("$SCHEDULER_PREFIX:checkIn", hostName)
-            transaction.exec()
+                transaction.del(staleServerAcquiredJobsSetName)
+                transaction.hdel("$SCHEDULER_PREFIX:checkIn", hostName)
+                transaction.exec()
+            } catch (Exception exception) {
+                log.error "Exception cleaning up stale servers, discarding transaction", exception
+                transaction.discard()
+            }
         }
     }
 
