@@ -1,5 +1,8 @@
 package grails.plugin.jesque
 
+import net.greghaines.jesque.admin.Admin
+import net.greghaines.jesque.admin.AdminClient
+import net.greghaines.jesque.admin.AdminImpl
 import net.greghaines.jesque.client.Client
 import net.greghaines.jesque.Job
 import net.greghaines.jesque.worker.ExceptionHandler
@@ -24,6 +27,7 @@ class JesqueService implements DisposableBean {
     Client jesqueClient
     WorkerInfoDAO workerInfoDao
     List<Worker> workers = Collections.synchronizedList([])
+    AdminClient jesqueAdminClient
 
     void enqueue(String queueName, Job job) {
         jesqueClient.enqueue(queueName, job)
@@ -88,24 +92,41 @@ class JesqueService implements DisposableBean {
     }
 
 
-    Worker startWorker(String queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null) {
+    Worker startWorker(String queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null,
+                       boolean paused = false)
+    {
         startWorker([queueName], [(jobName):jobClass], exceptionHandler)
     }
 
-    Worker startWorker(List queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null) {
+    Worker startWorker(List queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null,
+                       boolean paused = false)
+    {
         startWorker(queueName, [(jobName):jobClass], exceptionHandler)
     }
 
-    Worker startWorker(String queueName, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null) {
+    Worker startWorker(String queueName, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null,
+                       boolean paused = false)
+    {
         startWorker([queueName], jobTypes, exceptionHandler)
     }
 
-    Worker startWorker(List<String> queues, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null) {
+    Worker startWorker(List<String> queues, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null,
+                       boolean paused = false)
+    {
         log.debug "Starting worker processing queueus: ${queues}"
         def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes)
         if( exceptionHandler )
             worker.exceptionHandler = exceptionHandler
+
+        if (paused) {
+            worker.togglePause(paused)
+        }
+
         workers.add(worker)
+
+        // create an Admin for this worker (makes it possible to administer across a cluster)
+        Admin admin = new AdminImpl(jesqueConfig)
+        admin.setWorker(worker)
 
         def workerHibernateListener = new WorkerHibernateListener(sessionFactory)
         worker.addListener(workerHibernateListener, WorkerEvent.JOB_EXECUTE, WorkerEvent.JOB_SUCCESS, WorkerEvent.JOB_FAILURE)
@@ -115,6 +136,9 @@ class JesqueService implements DisposableBean {
 
         def workerThread = new Thread(worker)
         workerThread.start()
+
+        def adminThread = new Thread(admin)
+        adminThread.start()
 
         worker
     }
@@ -144,6 +168,18 @@ class JesqueService implements DisposableBean {
     }
 
     void startWorkersFromConfig(ConfigObject jesqueConfigMap) {
+
+        Boolean boolStartPaused = false // default to false
+
+        def startPaused = jesqueConfigMap.startPaused
+        if (startPaused != null) {
+            if (startPaused instanceof String) {
+                boolStartPaused = Boolean.parseBoolean(startPaused)
+            } else if (startPaused instanceof Boolean) {
+                boolStartPaused = startPaused
+            }
+        }
+
         jesqueConfigMap.workers.each{ String workerPoolName, value ->
             log.info "Starting workers for pool $workerPoolName"
 
@@ -156,7 +192,7 @@ class JesqueService implements DisposableBean {
                 throw new Exception("Invalid jobTypes (${value.jobTypes}) for pool $workerPoolName, must be a map")
 
             workers.times {
-                startWorker(value.queueNames, value.jobTypes)
+                startWorker(value.queueNames, value.jobTypes, (ExceptionHandler)null, boolStartPaused.booleanValue())
             }
         }
     }
@@ -178,5 +214,44 @@ class JesqueService implements DisposableBean {
 
     void destroy() throws Exception {
         this.stopAllWorkers()
+    }
+
+    void pauseAllWorkersOnThisNode() {
+        log.info "Pausing all ${workers.size()} jesque workers on this node"
+
+        List<Worker> workersToPause = workers.collect{ it }
+        workersToPause.each { Worker worker ->
+            log.debug "Pausing worker processing queues: ${worker.queues}"
+            worker.togglePause(true)
+        }
+    }
+
+    void resumeAllWorkersOnThisNode() {
+        log.info "Resuming all ${workers.size()} jesque workers on this node"
+
+        List<Worker> workersToPause = workers.collect{ it }
+        workersToPause.each { Worker worker ->
+            log.debug "Resuming worker processing queues: ${worker.queues}"
+            worker.togglePause(false)
+        }
+    }
+
+    void pauseAllWorkersInCluster() {
+        log.debug "Pausing all workers in the cluster"
+        jesqueAdminClient.togglePausedWorkers(true)
+    }
+
+    void resumeAllWorkersInCluster() {
+        log.debug "Resuming all workers in the cluster"
+        jesqueAdminClient.togglePausedWorkers(false)
+    }
+
+    void shutdownAllWorkersInCluster() {
+        log.debug "Shutting down all workers in the cluster"
+        jesqueAdminClient.shutdownWorkers(true)
+    }
+
+    boolean areAllWorkersInClusterPaused() {
+        return workerInfoDao.getActiveWorkerCount() == 0
     }
 }
