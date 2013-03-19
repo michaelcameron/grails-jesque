@@ -5,6 +5,7 @@ grails{
         createWorkersOnStartup = true
         schedulerThreadActive = true
         delayedJobThreadActive = true
+        startPaused = false
     }
 }
 
