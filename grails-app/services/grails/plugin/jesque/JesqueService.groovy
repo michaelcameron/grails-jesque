@@ -95,19 +95,19 @@ class JesqueService implements DisposableBean {
     Worker startWorker(String queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null,
                        boolean paused = false)
     {
-        startWorker([queueName], [(jobName):jobClass], exceptionHandler)
+        startWorker([queueName], [(jobName):jobClass], exceptionHandler, paused)
     }
 
     Worker startWorker(List queueName, String jobName, Class jobClass, ExceptionHandler exceptionHandler = null,
                        boolean paused = false)
     {
-        startWorker(queueName, [(jobName):jobClass], exceptionHandler)
+        startWorker(queueName, [(jobName):jobClass], exceptionHandler, paused)
     }
 
     Worker startWorker(String queueName, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null,
                        boolean paused = false)
     {
-        startWorker([queueName], jobTypes, exceptionHandler)
+        startWorker([queueName], jobTypes, exceptionHandler, paused)
     }
 
     Worker startWorker(List<String> queues, Map<String, Class> jobTypes, ExceptionHandler exceptionHandler = null,
