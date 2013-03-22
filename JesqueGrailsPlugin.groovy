@@ -2,6 +2,7 @@ import grails.plugin.jesque.GrailsJesqueJobClass
 import grails.plugin.jesque.JesqueJobArtefactHandler
 import net.greghaines.jesque.Config
 import net.greghaines.jesque.ConfigBuilder
+import net.greghaines.jesque.admin.AdminClientImpl
 import net.greghaines.jesque.client.ClientPoolImpl
 import net.greghaines.jesque.meta.dao.impl.FailureDAORedisImpl
 import net.greghaines.jesque.meta.dao.impl.KeysDAORedisImpl
@@ -82,6 +83,7 @@ class JesqueGrailsPlugin {
 
         def jesqueConfigInstance = jesqueConfigBuilder.build()
 
+        jesqueAdminClient(AdminClientImpl, ref('jesqueConfig'))
         jesqueConfig(Config, jesqueConfigInstance.host, jesqueConfigInstance.port, jesqueConfigInstance.timeout,
                      jesqueConfigInstance.password, jesqueConfigInstance.namespace, jesqueConfigInstance.database)
         jesqueClient(ClientPoolImpl, jesqueConfigInstance, ref('redisPool'))
