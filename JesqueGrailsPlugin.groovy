@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class JesqueGrailsPlugin {
 
-    def version = "0.6.1"
+    def version = "0.6.2"
     def grailsVersion = "2.0.0 > *"
     def dependsOn = [redis: "1.3.2 > *"]
     def pluginExcludes = [
@@ -80,6 +80,8 @@ class JesqueGrailsPlugin {
             jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout as Integer)
         if(redisConfigMap.password)
             jesqueConfigBuilder = jesqueConfigBuilder.withPassword(redisConfigMap.password)
+        if(redisConfigMap.database)
+            jesqueConfigBuilder = jesqueConfigBuilder.withDatabase(redisConfigMap.database as Integer)
 
         def jesqueConfigInstance = jesqueConfigBuilder.build()
 

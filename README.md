@@ -146,6 +146,8 @@ Release Notes
     * Fix edge case with errors after calling jedis.multi() but before calling trans.exec() ([issue #26](https://github.com/michaelcameron/grails-jesque/issues/26))
 * 0.6.1 - release 2013-03-22
     * Use Jesque's admin functionality to allow start/stop/pause of workers in a cluster
+* 0.6.2 - release 2013-06-13
+    * Add ability to specify Redis DB
 
 License
 -------

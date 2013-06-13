@@ -37,8 +37,12 @@ grails.project.dependency.resolution = {
             export = false
         }
 
-        test "org.gebish:geb-spock:0.9.0-SNAPSHOT"
-        test "org.spockframework:spock-grails-support:0.7-groovy-2.0"
+        test "org.gebish:geb-spock:0.9.0-SNAPSHOT" {
+            export = false
+        }
+        test "org.spockframework:spock-grails-support:0.7-groovy-2.0" {
+            export = false
+        }
     }
     plugins {
         compile(':redis:1.3.2')
@@ -47,6 +51,7 @@ grails.project.dependency.resolution = {
         }
         test(':spock:0.7') {
             exclude "spock-grails-support"
+            export = false
         }
         compile(":hibernate:$grailsVersion") {
             export = false
