@@ -49,6 +49,17 @@ class JesqueService implements DisposableBean {
         enqueue(queueName, jobClazz.simpleName, args)
     }
 
+    void priorityEnqueue(String queueName, Job job) {
+        jesqueClient.priorityEnqueue(queueName, job)
+    }
+
+    void priorityEnqueue(String queueName, String jobName, def args) {
+        priorityEnqueue(queueName, new Job(jobName, args))
+    }
+
+    void priorityEnqueue(String queueName, Class jobClazz, def args) {
+        priorityEnqueue(queueName, jobClazz.simpleName, args)
+    }
 
     void enqueueAt(DateTime dateTime, String queueName, Job job) {
         jesqueDelayedJobService.enqueueAt(dateTime, queueName, job)
