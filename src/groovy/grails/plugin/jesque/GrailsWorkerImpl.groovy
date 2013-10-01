@@ -72,7 +72,7 @@ class GrailsWorkerImpl extends WorkerImpl {
 
     protected void recoverFromException(final String curQueue, final Exception e) {
         super.recoverFromException(curQueue, e)
-        final RecoveryStrategy recoveryStrategy = this.exceptionHandlerRef.get().onException(this, e, curQueue)
+        final RecoveryStrategy recoveryStrategy = this.exceptionHandler.onException(this, e, curQueue)
         final int reconnectAttempts = getReconnectAttempts()
         switch (recoveryStrategy)
         {
