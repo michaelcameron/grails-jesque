@@ -1,17 +1,18 @@
 package grails.plugin.jesque
 
+import net.greghaines.jesque.Job
 import net.greghaines.jesque.admin.Admin
 import net.greghaines.jesque.admin.AdminClient
 import net.greghaines.jesque.admin.AdminImpl
 import net.greghaines.jesque.client.Client
-import net.greghaines.jesque.Job
+import net.greghaines.jesque.meta.WorkerInfo
+import net.greghaines.jesque.meta.dao.WorkerInfoDAO
 import net.greghaines.jesque.worker.ExceptionHandler
 import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.worker.WorkerEvent
-import net.greghaines.jesque.meta.dao.WorkerInfoDAO
-import net.greghaines.jesque.meta.WorkerInfo
-import org.springframework.beans.factory.DisposableBean
+import net.greghaines.jesque.worker.WorkerListener
 import org.joda.time.DateTime
+import org.springframework.beans.factory.DisposableBean
 
 class JesqueService implements DisposableBean {
 
@@ -180,16 +181,7 @@ class JesqueService implements DisposableBean {
 
     void startWorkersFromConfig(ConfigObject jesqueConfigMap) {
 
-        Boolean boolStartPaused = false // default to false
-
-        def startPaused = jesqueConfigMap.startPaused
-        if (startPaused != null) {
-            if (startPaused instanceof String) {
-                boolStartPaused = Boolean.parseBoolean(startPaused)
-            } else if (startPaused instanceof Boolean) {
-                boolStartPaused = startPaused
-            }
-        }
+        Boolean boolStartPaused = jesqueConfigMap.startPaused as boolean ?: false
 
         jesqueConfigMap.workers.each{ String workerPoolName, value ->
             log.info "Starting workers for pool $workerPoolName"
@@ -202,8 +194,15 @@ class JesqueService implements DisposableBean {
             if( !(value.jobTypes instanceof Map) )
                 throw new Exception("Invalid jobTypes (${value.jobTypes}) for pool $workerPoolName, must be a map")
 
+            WorkerListener customListener = null
+            if (value.customListener) {
+                customListener = ((Class) value.customListener).newInstance()
+            }
+
             workers.times {
-                startWorker(value.queueNames, value.jobTypes, (ExceptionHandler)null, boolStartPaused.booleanValue())
+                def worker = startWorker(value.queueNames, value.jobTypes, (ExceptionHandler) null, boolStartPaused.booleanValue())
+                if (worker && customListener)
+                    worker.addListener(customListener)
             }
         }
     }
