@@ -1,17 +1,18 @@
 package grails.plugin.jesque
 
+import net.greghaines.jesque.Job
 import net.greghaines.jesque.admin.Admin
 import net.greghaines.jesque.admin.AdminClient
 import net.greghaines.jesque.admin.AdminImpl
 import net.greghaines.jesque.client.Client
-import net.greghaines.jesque.Job
+import net.greghaines.jesque.meta.WorkerInfo
+import net.greghaines.jesque.meta.dao.WorkerInfoDAO
 import net.greghaines.jesque.worker.ExceptionHandler
 import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.worker.WorkerEvent
-import net.greghaines.jesque.meta.dao.WorkerInfoDAO
-import net.greghaines.jesque.meta.WorkerInfo
-import org.springframework.beans.factory.DisposableBean
+import net.greghaines.jesque.worker.WorkerListener
 import org.joda.time.DateTime
+import org.springframework.beans.factory.DisposableBean
 
 class JesqueService implements DisposableBean {
 
@@ -125,8 +126,25 @@ class JesqueService implements DisposableBean {
                        boolean paused = false)
     {
         log.debug "Starting worker processing queueus: ${queues}"
-        def worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes)
-        if( exceptionHandler )
+
+        Class customWorkerClass = grailsApplication.config.grails.jesque.custom.worker.clazz
+        Worker worker
+        if (customWorkerClass && customWorkerClass in GrailsWorkerImpl) {
+            worker = customWorkerClass.newInstance(grailsApplication, jesqueConfig, queues, jobTypes)
+        } else {
+            if (customWorkerClass)
+                log.warn('The specified custom worker class does not extend GrailsWorkerImpl. Ignoring it')
+            worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes)
+        }
+
+        Class customListenerClass = grailsApplication.config.grails.jesque.custom.listener.clazz
+        if (customListenerClass && customListenerClass in WorkerListener) {
+            worker.addListener(customListenerClass.newInstance() as WorkerListener)
+        } else if (customListenerClass) {
+            log.warn('The specified custom listener class does not implement WorkerListener. Ignoring it')
+        }
+
+        if (exceptionHandler)
             worker.exceptionHandler = exceptionHandler
 
         if (paused) {
@@ -180,30 +198,23 @@ class JesqueService implements DisposableBean {
 
     void startWorkersFromConfig(ConfigObject jesqueConfigMap) {
 
-        Boolean boolStartPaused = false // default to false
+        def startPaused = jesqueConfigMap.startPaused as boolean ?: false
 
-        def startPaused = jesqueConfigMap.startPaused
-        if (startPaused != null) {
-            if (startPaused instanceof String) {
-                boolStartPaused = Boolean.parseBoolean(startPaused)
-            } else if (startPaused instanceof Boolean) {
-                boolStartPaused = startPaused
-            }
-        }
-
-        jesqueConfigMap.workers.each{ String workerPoolName, value ->
+        jesqueConfigMap.workers.each { String workerPoolName, value ->
             log.info "Starting workers for pool $workerPoolName"
 
             def workers = value.workers ? value.workers.toInteger() : DEFAULT_WORKER_POOL_SIZE
+            def queueNames = value.queueNames
+            def jobTypes = value.jobTypes
 
-            if( !((value.queueNames instanceof String) || (value.queueNames instanceof List<String>)))
+            if (!((queueNames instanceof String) || (queueNames instanceof List<String>)))
                 throw new Exception("Invalid queueNames for pool $workerPoolName, expecting must be a String or a List<String>.")
 
-            if( !(value.jobTypes instanceof Map) )
-                throw new Exception("Invalid jobTypes (${value.jobTypes}) for pool $workerPoolName, must be a map")
+            if (!(jobTypes instanceof Map))
+                throw new Exception("Invalid jobTypes (${jobTypes}) for pool $workerPoolName, must be a map")
 
             workers.times {
-                startWorker(value.queueNames, value.jobTypes, (ExceptionHandler)null, boolStartPaused.booleanValue())
+                startWorker(queueNames, jobTypes, null, startPaused)
             }
         }
     }

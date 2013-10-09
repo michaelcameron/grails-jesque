@@ -21,6 +21,9 @@ grails.project.dependency.resolution = {
         mavenRepo "http://download.java.net/maven/2/"
         mavenRepo "http://repository.jboss.com/maven2/"
         mavenRepo "https://oss.sonatype.org/content/repositories/snapshots/"
+        mavenRepo "http://repo.grails.org/grails/libs-releases/"
+        mavenRepo "http://m2repo.spockframework.org/ext/"
+        mavenRepo "http://m2repo.spockframework.org/snapshots/"
     }
     dependencies {
         compile('commons-pool:commons-pool:1.6') {
@@ -37,21 +40,18 @@ grails.project.dependency.resolution = {
             export = false
         }
 
-        test "org.gebish:geb-spock:0.9.0-SNAPSHOT" {
-            export = false
-        }
-        test "org.spockframework:spock-grails-support:0.7-groovy-2.0" {
+        test ("org.spockframework:spock-grails-support:0.7-groovy-2.0") {
             export = false
         }
     }
     plugins {
-        compile(':redis:1.3.2')
+        compile ":redis:1.4"
         compile(':release:2.0.4', ':rest-client-builder:1.0.2') {
             export = false
         }
-        test(':spock:0.7') {
-            exclude "spock-grails-support"
+        test(":spock:0.7") {
             export = false
+            exclude "spock-grails-support"
         }
         compile(":hibernate:$grailsVersion") {
             export = false
