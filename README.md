@@ -111,6 +111,38 @@ class MyJob {
 ```
 
 
+Custom Worker and WorkerListener
+----
+You can define a custom Worker implementation via Config.groovy. This class must extend GrailsWorkerImpl if not this configuration parameter is ignored and GrailsWorkerImpl is used
+```xml
+grails {
+    jesque {
+        custom {
+            worker {
+            	clazz = CustomWorkerImpl
+            }
+        }
+	}
+}
+
+´´´
+
+The same works with a custom WorkerListener class. This class must implement WorkerListener if not it is ignored.
+
+```xml
+grails {
+    jesque {
+        custom {
+            listener {
+            	clazz = CustomWorkerListener
+            }
+        }
+	}
+}
+´´
+
+
+
 Unit and integration tests will also automatically be created.  If you have spock installed and listed in your application.properties
 it will create an integration specification instead of a grails integration test.
 
@@ -148,6 +180,10 @@ Release Notes
     * Use Jesque's admin functionality to allow start/stop/pause of workers in a cluster
 * 0.6.2 - release 2013-06-13
     * Add ability to specify Redis DB
+* 0.7.0 - release 2013-06-13
+	* Added priorityEnqueue methods to JesqueService
+	* Added ability to define a custom WorkerListener
+	* added ability to define a custom Worker implementation
 
 License
 -------
