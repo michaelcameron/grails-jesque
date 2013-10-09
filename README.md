@@ -124,8 +124,7 @@ grails {
         }
 	}
 }
-
-´´´
+```
 
 The same works with a custom WorkerListener class. This class must implement WorkerListener if not it is ignored.
 
