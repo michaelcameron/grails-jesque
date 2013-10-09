@@ -110,6 +110,9 @@ class MyJob {
 }
 ```
 
+Unit and integration tests will also automatically be created.  If you have spock installed and listed in your application.properties
+it will create an integration specification instead of a grails integration test.
+
 
 Custom Worker and WorkerListener
 ----
@@ -139,11 +142,6 @@ grails {
 	}
 }
 ```
-
-
-
-Unit and integration tests will also automatically be created.  If you have spock installed and listed in your application.properties
-it will create an integration specification instead of a grails integration test.
 
 Roadmap
 ----
