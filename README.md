@@ -180,7 +180,7 @@ Release Notes
 * 0.7.0 - release 2013-06-13
 	* Added priorityEnqueue methods to JesqueService
 	* Added ability to define a custom WorkerListener
-	* added ability to define a custom Worker implementation
+	* Added ability to define a custom WorkerImpl
 
 License
 -------
