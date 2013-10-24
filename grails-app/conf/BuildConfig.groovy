@@ -31,9 +31,13 @@ grails.project.dependency.resolution = {
         }
 
         compile('net.greghaines:jesque:1.3.1')
-        compile('redis.clients:jedis:2.1.0')
+        compile('redis.clients:jedis:2.2.0')
 
         compile('joda-time:joda-time:2.1')
+
+        compile('org.codehaus.groovy.modules.http-builder:http-builder:0.5.2') {
+            export = false
+        }
 
         test("org.seleniumhq.selenium:selenium-htmlunit-driver:2.25.0") {
             excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
@@ -46,7 +50,7 @@ grails.project.dependency.resolution = {
     }
     plugins {
         compile ":redis:1.4"
-        compile(':release:2.0.4', ':rest-client-builder:1.0.2') {
+        compile(':release:2.2.1', ':rest-client-builder:1.0.3') {
             export = false
         }
         test(":spock:0.7") {

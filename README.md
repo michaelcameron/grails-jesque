@@ -122,10 +122,10 @@ grails {
     jesque {
         custom {
             worker {
-            	clazz = CustomWorkerImpl
+                clazz = CustomWorkerImpl
             }
         }
-	}
+    }
 }
 ```
 
@@ -136,10 +136,10 @@ grails {
     jesque {
         custom {
             listener {
-            	clazz = CustomWorkerListener
+                clazz = CustomWorkerListener
             }
         }
-	}
+    }
 }
 ```
 
@@ -178,9 +178,9 @@ Release Notes
 * 0.6.2 - release 2013-06-13
     * Add ability to specify Redis DB
 * 0.7.0 - release 2013-06-13
-	* Added priorityEnqueue methods to JesqueService
-	* Added ability to define a custom WorkerListener
-	* Added ability to define a custom WorkerImpl
+    * Added priorityEnqueue methods to JesqueService
+    * Added ability to define a custom WorkerListener
+    * Added ability to define a custom WorkerImpl
 
 License
 -------

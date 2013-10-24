@@ -127,21 +127,22 @@ class JesqueService implements DisposableBean {
     {
         log.debug "Starting worker processing queueus: ${queues}"
 
-        Class customWorkerClass = grailsApplication.config.grails.jesque.custom.worker.clazz
-        Worker worker
-        if (customWorkerClass && customWorkerClass in GrailsWorkerImpl) {
-            worker = customWorkerClass.newInstance(grailsApplication, jesqueConfig, queues, jobTypes)
-        } else {
-            if (customWorkerClass)
-                log.warn('The specified custom worker class does not extend GrailsWorkerImpl. Ignoring it')
-            worker = new GrailsWorkerImpl(grailsApplication, jesqueConfig, queues, jobTypes)
+        Class workerClass = GrailsWorkerImpl
+        def customWorkerClass = grailsApplication.config.grails.jesque.custom.worker.clazz
+        if(customWorkerClass) {
+            if( customWorkerClass in GrailsWorkerImpl)
+                workerClass = customWorkerClass
+            else
+                log.warn("The specified custom worker class ${customWorkerClass} does not extend GrailsWorkerImpl. Ignoring it")
         }
+        Worker worker = (Worker)workerClass.newInstance(grailsApplication, jesqueConfig, queues, jobTypes)
 
-        Class customListenerClass = grailsApplication.config.grails.jesque.custom.listener.clazz
-        if (customListenerClass && customListenerClass in WorkerListener) {
-            worker.addListener(customListenerClass.newInstance() as WorkerListener)
-        } else if (customListenerClass) {
-            log.warn('The specified custom listener class does not implement WorkerListener. Ignoring it')
+        def customListenerClass = grailsApplication.config.grails.jesque.custom.listener.clazz
+        if(customListenerClass) {
+            if(customListenerClass in WorkerListener )
+                worker.addListener(customListenerClass.newInstance() as WorkerListener)
+            else
+                log.warn("The specified custom listener class ${customListenerClass} does not implement WorkerListener. Ignoring it")
         }
 
         if (exceptionHandler)
