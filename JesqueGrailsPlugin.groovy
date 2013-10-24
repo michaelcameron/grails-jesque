@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class JesqueGrailsPlugin {
 
-    def version = "0.6.2"
+    def version = "0.7"
     def grailsVersion = "2.0.0 > *"
     def dependsOn = [redis: "1.3.2 > *"]
     def pluginExcludes = [
@@ -40,7 +40,8 @@ class JesqueGrailsPlugin {
     def license = "APACHE"
     def developers = [
             [name: "Michael Cameron", email: "michael.e.cameron@gmail.com"],
-            [name: "Ted Naleid", email: "contact@naleid.com"]]
+            [name: "Ted Naleid", email: "contact@naleid.com"],
+            [name: "Philipp Eschenbach", email: "peh@kunstsysteme.com"]]
     def documentation = "https://github.com/michaelcameron/grails-jesque"
     def scm = [url: "https://github.com/michaelcameron/grails-jesque"]
 
