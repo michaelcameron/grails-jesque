@@ -67,6 +67,7 @@ class JesqueSchedulerService {
 
     void deleteSchedule(String name) {
         scheduledJobDaoService.delete(name)
+        triggerDaoService.delete(name)
     }
 
     Integer enqueueReadyJobs(DateTime until, String hostName) {

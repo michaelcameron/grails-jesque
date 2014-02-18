@@ -25,6 +25,7 @@ class ScheduledJobDaoService {
 
     void delete( Jedis redis, String name) {
         redis.del(ScheduledJob.getRedisKeyForName(name))
+        redis.srem(ScheduledJob.JOB_INDEX, name)
     }
 
     ScheduledJob findByName(String name) {

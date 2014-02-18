@@ -30,7 +30,7 @@ class Trigger {
         "$REDIS_PREFIX:$jobName"
     }
 
-    static getRedisKeyForJobName(String jobName) {
+    static String getRedisKeyForJobName(String jobName) {
         "$REDIS_PREFIX:$jobName"
     }
 
