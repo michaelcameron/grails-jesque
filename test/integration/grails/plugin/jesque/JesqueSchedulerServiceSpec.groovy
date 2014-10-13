@@ -1,6 +1,6 @@
 package grails.plugin.jesque
 
-import grails.plugin.spock.IntegrationSpec
+import grails.test.spock.IntegrationSpec
 import org.joda.time.DateTimeZone
 import org.joda.time.DateTime
 import redis.clients.jedis.Jedis

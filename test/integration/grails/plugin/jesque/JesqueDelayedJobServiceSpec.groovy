@@ -2,7 +2,7 @@ package grails.plugin.jesque
 
 import org.joda.time.DateTime
 import grails.plugin.jesque.test.SimpleJob
-import grails.plugin.spock.IntegrationSpec
+import grails.test.spock.IntegrationSpec
 
 class JesqueDelayedJobServiceSpec extends IntegrationSpec {
 

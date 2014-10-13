@@ -4,10 +4,10 @@ import net.greghaines.jesque.worker.WorkerListener
 import net.greghaines.jesque.worker.WorkerEvent
 import net.greghaines.jesque.worker.Worker
 import net.greghaines.jesque.Job
+import org.springframework.orm.hibernate4.SessionFactoryUtils
+import org.springframework.orm.hibernate4.SessionHolder
 import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.springframework.orm.hibernate3.SessionHolder
 import org.hibernate.Session
-import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.hibernate.FlushMode
 import org.apache.commons.logging.LogFactory
 import org.hibernate.SessionFactory
@@ -42,7 +42,7 @@ class WorkerHibernateListener implements WorkerListener {
             ((SessionHolder)inStorage).getSession().flush();
             return false;
         } else {
-            Session session = SessionFactoryUtils.getSession(sessionFactory, true);
+            Session session = sessionFactory.currentSession
             session.setFlushMode(FlushMode.AUTO);
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session));
             return true;

@@ -1,6 +1,6 @@
 package grails.plugin.jesque
 
-import grails.plugin.spock.IntegrationSpec
+import grails.test.spock.IntegrationSpec
 import grails.plugin.jesque.test.SelfConfiguredJob
 import grails.plugin.jesque.test.SimpleJob
 import grails.plugin.jesque.test.ScheduledTestJob

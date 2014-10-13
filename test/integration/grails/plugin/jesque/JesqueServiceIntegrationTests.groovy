@@ -1,24 +1,23 @@
 package grails.plugin.jesque
 
+import grails.test.spock.IntegrationSpec
 import net.greghaines.jesque.meta.dao.QueueInfoDAO
 import net.greghaines.jesque.meta.dao.FailureDAO
 import grails.plugin.jesque.test.Foo
-
 import grails.plugin.jesque.test.ExceptionJob
 import grails.plugin.jesque.test.DomainJob
 import grails.plugin.jesque.test.SimpleJob
 import grails.plugin.jesque.test.AutoWireJob
-import grails.test.GrailsUnitTestCase
 import grails.plugin.redis.RedisService
 
-class JesqueServiceIntegrationTests extends GrailsUnitTestCase {
+class JesqueServiceIntegrationTests extends IntegrationSpec {
 
     def jesqueService
     QueueInfoDAO queueInfoDao
     FailureDAO failureDao
     RedisService redisService
 
-    void setUp() {
+    void setup() {
         redisService.flushDB()
     }
 
