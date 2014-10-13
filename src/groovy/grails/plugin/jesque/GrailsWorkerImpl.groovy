@@ -18,6 +18,7 @@ class GrailsWorkerImpl extends WorkerImpl {
     private Log
     BeanBuilder beanBuilder
     GrailsApplication grailsApplication
+    JobExceptionHandler jobExceptionHandler
 
     public GrailsWorkerImpl(
             GrailsApplication grailsApplication,
@@ -52,6 +53,11 @@ class GrailsWorkerImpl extends WorkerImpl {
         } catch (Exception e) {
             failure(e, job, curQueue)
         }
+    }
+
+    protected void failure(final Exception ex, final Job job, final String curQueue) {
+        jobExceptionHandler?.onException(ex, job, curQueue)
+        super.failure(ex, job, curQueue)
     }
 
     protected Object createInstance(String fullClassName) {

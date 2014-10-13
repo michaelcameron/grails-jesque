@@ -145,6 +145,21 @@ grails {
 }
 ```
 
+To handle exceptions from jobs in a generic way you may specify a job exception handler like this:
+
+```xml
+grails {
+    jesque {
+        custom {
+            jobExceptionHandler {
+            	clazz = CustomJobExceptionHandler
+            }
+        }
+    }
+}
+
+```
+
 Roadmap
 ----
 * Ability to execute methods on services without creating a job object
@@ -152,7 +167,6 @@ Roadmap
 * Create grails/groovy docs (gdoc?) to extensively document options
 * Support job/config changes when running as `grails run-app
 * Dynamic wake time of delayed jobs thread to reduce polling
-* Ability to set an exception handler for configured workers
 
 Release Notes
 =============
@@ -186,6 +200,7 @@ Release Notes
 * 0.8.0 - TBD
     * updated to grails version 2.3.5
     * updated to hibernate 4
+    * added ability to specify a custom job exception handler
 
 License
 -------
