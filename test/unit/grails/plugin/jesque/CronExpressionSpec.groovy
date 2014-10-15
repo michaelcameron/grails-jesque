@@ -1,10 +1,11 @@
 package grails.plugin.jesque
 
 import org.joda.time.DateTime
-import grails.plugin.spock.UnitSpec
+import spock.lang.Specification
+
 import java.text.ParseException
 
-class CronExpressionSpec extends UnitSpec {
+class CronExpressionSpec extends Specification {
     void "test isSatisfiedBy"() {
         given:
         def cronExpression = new CronExpression("0 15 10 * * ? 2005")

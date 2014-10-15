@@ -9,3 +9,4 @@ plugin.xml
 stacktrace.log
 
 out/
+.idea/

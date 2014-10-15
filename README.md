@@ -183,6 +183,9 @@ Release Notes
     * Added priorityEnqueue methods to JesqueService
     * Added ability to define a custom WorkerListener
     * Added ability to define a custom WorkerImpl
+* 0.8.0 - TBD
+    * updated to grails version 2.3.5
+    * updated to hibernate 4
 
 License
 -------

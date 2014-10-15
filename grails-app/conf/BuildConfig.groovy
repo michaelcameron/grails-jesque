@@ -2,11 +2,12 @@ grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
+grails.project.dependency.resolver = "ivy" // or ivy
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
         // uncomment to disable ehcache
-        // excludes 'ehcache'
+        excludes 'ant'
     }
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     repositories {
@@ -26,14 +27,15 @@ grails.project.dependency.resolution = {
         mavenRepo "http://m2repo.spockframework.org/snapshots/"
     }
     dependencies {
-        compile('commons-pool:commons-pool:1.6') {
-            transitive = false
-        }
+        compile('commons-pool:commons-pool:1.6')
 
         compile('net.greghaines:jesque:1.3.1')
-        compile('redis.clients:jedis:2.2.0')
-
+        compile('redis.clients:jedis:2.2.1')
         compile('joda-time:joda-time:2.1')
+
+        test ("org.spockframework:spock-grails-support:0.7-groovy-2.0") {
+            export = false
+        }
 
         compile('org.codehaus.groovy.modules.http-builder:http-builder:0.5.2') {
             export = false
@@ -43,22 +45,19 @@ grails.project.dependency.resolution = {
             excludes "xercesImpl", "xmlParserAPIs", "xml-apis", "xerces", "commons-logging"
             export = false
         }
-
-        test ("org.spockframework:spock-grails-support:0.7-groovy-2.0") {
-            export = false
-        }
     }
     plugins {
         compile ":redis:1.4"
-        compile(':release:2.2.1', ':rest-client-builder:1.0.3') {
+        build(':release:2.2.1', ':rest-client-builder:1.0.3') {
             export = false
         }
         test(":spock:0.7") {
             export = false
             exclude "spock-grails-support"
         }
-        compile(":hibernate:$grailsVersion") {
+        compile (":hibernate4:4.1.11.2") {
             export = false
         }
+        compile ":joda-time:1.4"
     }
 }
