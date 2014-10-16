@@ -29,15 +29,14 @@ grails.project.dependency.resolution = {
     dependencies {
         compile('commons-pool:commons-pool:1.6')
 
-        compile('net.greghaines:jesque:1.3.1')
-        compile('redis.clients:jedis:2.2.1')
-        compile('joda-time:joda-time:2.1')
+        compile('net.greghaines:jesque:1.3.2')
+        compile('redis.clients:jedis:2.6.0')
+        compile('joda-time:joda-time:2.5')
     }
     plugins {
         compile ":redis:1.5.5"
-        build(':release:2.2.1', ':rest-client-builder:1.0.3') {
+        build(':release:3.0.1', ':rest-client-builder:2.0.3') {
             export = false
         }
-        compile ":joda-time:1.4"
     }
 }

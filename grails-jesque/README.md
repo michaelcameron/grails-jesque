@@ -193,14 +193,15 @@ Release Notes
     * Use Jesque's admin functionality to allow start/stop/pause of workers in a cluster
 * 0.6.2 - release 2013-06-13
     * Add ability to specify Redis DB
-* 0.8.0 - TBD - 0.7-SNAPSHOT version available now
+* 0.8.0 - TBD - 0.8.0-SNAPSHOT version available now
     * Added priorityEnqueue methods to JesqueService
     * Added ability to define a custom WorkerListener
     * Added ability to define a custom WorkerImpl
-    * added ability to specify a custom job exception handler
-    * updated to grails version 2.3.8
-    * move tests outside of main project
-    * remove test and hibernate dependencies
+    * Added ability to specify a custom job exception handler
+    * Updated to grails version 2.3.8
+    * Move tests outside of main project
+    * Remove test and hibernate dependencies
+    * Updated dependencies
 
 
 License
