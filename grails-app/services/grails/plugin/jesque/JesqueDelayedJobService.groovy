@@ -54,8 +54,8 @@ class JesqueDelayedJobService {
             def minTimestamp = queues.collect{ queueName ->
                 def timestamps = jedis.zrangeByScore( "${RESQUE_DELAYED_JOBS_PREFIX}:${queueName}", '0', 'inf', 0, 1 )
                 timestamps ? timestamps.asList().first().toLong() : Long.MAX_VALUE
-            }.min() ?: Long.MAX_VALUE
-            new DateTime( minTimestamp.toLong() )
+            }.min()
+            minTimestamp ? new DateTime( minTimestamp.toLong() ) : DateTime.now().plusYears(1000)
         } as DateTime
     }
 
