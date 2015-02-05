@@ -18,10 +18,11 @@ import org.springframework.context.ApplicationContext
 import grails.plugin.jesque.TriggersConfigBuilder
 import grails.plugin.jesque.JesqueDelayedJobThreadService
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import redis.clients.jedis.Protocol
 
 class JesqueGrailsPlugin {
 
-    def version = "0.8.0-SNAPSHOT"
+    def version = "0.8.1-SNAPSHOT"
     def grailsVersion = "2.0.0 > *"
     def dependsOn = [redis: "1.3.2 > *"]
     def pluginExcludes = [
@@ -70,6 +71,10 @@ class JesqueGrailsPlugin {
         log.info "Creating jesque core beans"
         def redisConfigMap = application.config.grails.redis
         def jesqueConfigMap = application.config.grails.jesque
+        /*
+        def port = "${redisConfigMap?.port?.isInteger() ? redisConfigMap.port : Protocol.DEFAULT_PORT}" as Integer
+        def timeout = "${redisConfigMap?.timeout?.isInteger() ? redisConfigMap.timeout : Protocol.DEFAULT_TIMEOUT}" as Integer
+         */
 
         def jesqueConfigBuilder = new ConfigBuilder()
         if(jesqueConfigMap.namespace)
@@ -77,13 +82,13 @@ class JesqueGrailsPlugin {
         if(redisConfigMap.host)
             jesqueConfigBuilder = jesqueConfigBuilder.withHost(redisConfigMap.host)
         if(redisConfigMap.port)
-            jesqueConfigBuilder = jesqueConfigBuilder.withPort(redisConfigMap.port as Integer)
+            jesqueConfigBuilder = jesqueConfigBuilder.withPort("${redisConfigMap.port.isInteger() ? redisConfigMap.port : Protocol.DEFAULT_PORT}" as Integer)
         if(redisConfigMap.timeout)
-            jesqueConfigBuilder = jesqueConfigBuilder.withTimeout(redisConfigMap.timeout as Integer)
+            jesqueConfigBuilder = jesqueConfigBuilder.withTimeout("${redisConfigMap.timeout.isInteger() ? redisConfigMap.timeout : Protocol.DEFAULT_TIMEOUT}" as Integer)
         if(redisConfigMap.password)
             jesqueConfigBuilder = jesqueConfigBuilder.withPassword(redisConfigMap.password)
         if(redisConfigMap.database)
-            jesqueConfigBuilder = jesqueConfigBuilder.withDatabase(redisConfigMap.database as Integer)
+            jesqueConfigBuilder = jesqueConfigBuilder.withDatabase("${redisConfigMap.database.isInteger() ? redisConfigMap.timeout : Protocol.DEFAULT_DATABASE}" as Integer)
 
         def jesqueConfigInstance = jesqueConfigBuilder.build()
 
