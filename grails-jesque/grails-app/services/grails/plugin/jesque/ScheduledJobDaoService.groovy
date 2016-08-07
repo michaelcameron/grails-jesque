@@ -4,6 +4,8 @@ import redis.clients.jedis.Jedis
 
 class ScheduledJobDaoService {
 
+    static transactional = false
+
     def redisService
 
     void save( ScheduledJob scheduledJob ) {

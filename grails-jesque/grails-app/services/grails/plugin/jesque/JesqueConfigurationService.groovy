@@ -3,6 +3,9 @@ package grails.plugin.jesque
 import org.joda.time.DateTimeZone
 
 class JesqueConfigurationService {
+
+    static transactional = false
+
     def grailsApplication
     def jesqueSchedulerService
 
