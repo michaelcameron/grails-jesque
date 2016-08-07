@@ -10,6 +10,7 @@ import org.joda.time.Seconds
 import org.joda.time.DateTimeZone
 
 class JesqueSchedulerService {
+
     static transactional = false
 
     def redisService

@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicReference
 import org.joda.time.DateTime
 
 class JesqueDelayedJobThreadService implements Runnable, DisposableBean {
-    static transactional = true
-    static scope = 'singleton'
+
+    static transactional = false
 
     protected static final Integer IDLE_WAIT_TIME = 10 * 1000
     protected AtomicReference<JesqueDelayedJobThreadState> threadState = new AtomicReference(JesqueDelayedJobThreadState.New)

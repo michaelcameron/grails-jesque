@@ -4,6 +4,8 @@ import redis.clients.jedis.Jedis
 
 class TriggerDaoService {
 
+    static transactional = false
+
     def redisService
 
     void save( Trigger trigger) {

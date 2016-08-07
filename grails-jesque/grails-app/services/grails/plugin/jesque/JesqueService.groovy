@@ -18,7 +18,6 @@ import org.springframework.beans.factory.DisposableBean
 class JesqueService implements DisposableBean {
 
     static transactional = false
-    static scope = 'singleton'
 
     static final int DEFAULT_WORKER_POOL_SIZE = 3
 
